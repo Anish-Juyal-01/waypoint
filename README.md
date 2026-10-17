@@ -21,17 +21,37 @@ the best available one as the Windows default output, switching automatically wh
 - A risograph-zine look: pink, blue and yellow inks on cream paper (or plum in dark mode), with a masthead whose
   letters dance to what's playing
 
-## Requirements
+## Download and run
 
-| | |
-|---|---|
-| OS | Windows 10 1809+ / Windows 11 (x64) |
-| Runtime | Microsoft Edge WebView2 Runtime (preinstalled on Windows 11) |
-| To build | .NET SDK 10, Node.js 20+ |
+Waypoint is a single portable `.exe` — no installer, and you don't need .NET or anything else installed.
 
-The release build is self-contained — end users don't need .NET installed.
+1. **Check your PC**: Windows 10 (version 1809 or newer) or Windows 11, 64-bit. Waypoint draws its window with
+   Microsoft Edge WebView2, which is already on Windows 11 and on almost every up-to-date Windows 10 PC. If Waypoint
+   says it's missing, install the free
+   [Evergreen WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) and start it again.
+2. **Download** `Waypoint.exe` from the [latest release](https://github.com/Anish-Juyal-01/waypoint/releases/latest)
+   (under **Assets**, about 150 MB).
+3. **Give it a permanent home** (optional, but do it if you'll use *Start with Windows*): make a folder such as
+   `C:\Users\<you>\AppData\Local\Programs\Waypoint` or `C:\Tools\Waypoint` and move `Waypoint.exe` into it.
+   *Start with Windows* remembers the exe's location, so it shouldn't stay in Downloads if you tidy that folder.
+4. **Double-click `Waypoint.exe`.** The app isn't code-signed yet, so Windows SmartScreen may say
+   *"Windows protected your PC"*. Click **More info → Run anyway** (only needed the first time). Some antivirus tools
+   are suspicious of new unsigned single-file apps; the release notes list the file's SHA-256 so you can check it's the
+   genuine build (`Get-FileHash .\Waypoint.exe` in PowerShell).
+5. **Rank your devices**: drag them into order on the **Devices** page. Waypoint switches to the highest one that's
+   connected and keeps it that way. Do the same for mics on **Microphones** (mic switching starts **Off**).
+6. Want it always running? **Settings → Start with Windows**. Closing the window keeps Waypoint in the tray (bottom
+   right, near the clock); right-click the tray icon to switch output, profile or mode, or **Quit Waypoint**.
 
-## Build & run
+**Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the new one, start it again. Your rankings,
+profiles and history live in `%APPDATA%\Waypoint` and are kept.
+
+**Uninstalling**: turn off *Start with Windows*, quit from the tray, delete `Waypoint.exe`, and delete
+`%APPDATA%\Waypoint` and `%LOCALAPPDATA%\Waypoint` if you also want your settings gone.
+
+## Build from source
+
+You only need this to change the code. Requirements: Windows 10/11 x64, .NET SDK 10, Node.js 20+.
 
 ```powershell
 # Full pipeline: UI build + tests + self-contained single-file publish → dist\Waypoint.exe
@@ -122,6 +142,9 @@ Everything stays on the PC:
 - `%APPDATA%\Waypoint\activity.jsonl` — activity log (last 2000 entries)
 - `%LOCALAPPDATA%\Waypoint\WebView2` — UI cache
 - Start with Windows: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Waypoint`
+- Microphone: Windows only reports a mic's level while some app has it open, so while the **Microphones** page is on
+  screen Waypoint opens the default mic silently to draw its level bars (Windows shows its "microphone in use" icon).
+  Nothing is recorded or saved, and it's closed as soon as you leave the page or hide the window.
 
 ## Known limitations
 
