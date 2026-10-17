@@ -133,3 +133,7 @@ Everything stays on the PC:
 - Bluetooth battery levels are not shown (no public API for all devices).
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Third-party libraries and fonts are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
