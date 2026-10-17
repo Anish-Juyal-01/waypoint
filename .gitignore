@@ -1,0 +1,10 @@
+bin/
+obj/
+node_modules/
+dist/
+ui/dist/
+*.user
+.vs/
+artifacts/
+*.tsbuildinfo
+.claude/

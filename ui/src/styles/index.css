@@ -1,0 +1,751 @@
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────
+   Waypoint design system — "risograph"
+   Everything looks printed with a few inks on paper: fluoro pink,
+   federal blue and sunflower yellow (plus orange/aqua/green for
+   status). Hard offset shadows read as slightly misregistered ink,
+   a fine grain sits over the paper, and the pals are re-inked in
+   the same colours. Token names are kept from the earlier palette
+   (lime = the main accent, now pink) so components didn't change.
+   ────────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: "DM Sans Variable", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "DM Sans Variable", system-ui, sans-serif;
+  --font-mono: "DM Mono", "Cascadia Mono", ui-monospace, monospace;
+  --font-pixel: "DM Mono", "Cascadia Mono", ui-monospace, monospace;
+
+  /* Paper scale, dark theme = "night riso" on plum stock (backgrounds → raised surfaces) */
+  --color-ink-950: #150a1a;
+  --color-ink-900: #1d1023;
+  --color-ink-850: #221328;
+  --color-ink-800: #29172f;
+  --color-ink-750: #321c39;
+  --color-ink-700: #3c2343;
+  --color-ink-600: #4b2e53;
+  --color-ink-500: #62426b;
+
+  /* Text */
+  --color-fg: #ffe4ef;
+  --color-fg-2: #e8c3d5;
+  --color-fg-3: #b893a9;
+  --color-fg-4: #826584;
+
+  /* Inks (fills) */
+  --color-lime: #ff6fb5; /* fluoro pink — the main accent */
+  --color-lime-2: #f2559f;
+  --color-coral: #ff8a5c; /* fluoro orange */
+  --color-violet: #7aa6ff; /* federal blue, lifted for dark paper */
+  --color-violet-2: #5b8cff;
+  --color-sky: #62c4ff; /* aqua */
+  --color-sun: #ffd23f; /* sunflower */
+  --color-mint: #3ddc97; /* green */
+
+  /* Ink *text/border* shades — same as the fills on dark, deepened on light for contrast. */
+  --color-tx-lime: #ff8cc4;
+  --color-tx-coral: #ff9a70;
+  --color-tx-violet: #9cbcff;
+  --color-tx-sky: #7fd0ff;
+  --color-tx-sun: #ffd23f;
+  --color-tx-mint: #5fe3aa;
+
+  /* Text placed on an ink fill. */
+  --color-on-accent: #1d1023;
+  /* Neutral fill (e.g. the selected "Off" key). */
+  --color-neutral: #e8c3d5;
+
+  /* Semantic */
+  --color-ok: #5fe3aa;
+  --color-warn: #ffd23f;
+  --color-bad: #ff9a70;
+  --color-info: #7fd0ff;
+
+  /* Legacy aliases kept so older class names map onto the new palette. */
+  --color-echo-cyan: #ff6fb5;
+  --color-echo-blue: #7aa6ff;
+  --color-echo-violet: #ff8a5c;
+
+  --radius-card: 16px;
+  --radius-tile: 11px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-pulse-soft: pulse-soft 1.8s ease-in-out infinite;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-twinkle: twinkle 4.2s ease-in-out infinite;
+  --animate-blink: blink 1.1s ease-in-out infinite;
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.15;
+      transform: scale(0.6) rotate(0deg);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1) rotate(45deg);
+    }
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+:root {
+  color-scheme: dark;
+  --line: rgba(255, 228, 239, 0.12);
+  --line-strong: rgba(255, 228, 239, 0.24);
+  --dot: rgba(255, 111, 181, 0.1);
+  --bw: 1.6px; /* border weight */
+  --px: 3px; /* hard-shadow depth */
+  /* Second ink used for the misregistration offset. */
+  --ink-2: #7aa6ff;
+  --grain-blend: screen;
+  --grain-opacity: 0.07;
+
+  /* Pal re-inking (see Sprite): line, paper, light, mid and dark inks. */
+  --riso-line: #1d1023;
+  --riso-paper: #ffe4ef;
+  --riso-light: #ffd23f;
+  --riso-mid: #ff6fb5;
+  --riso-deep: #7aa6ff;
+}
+
+/* ── Light theme: classic riso on cream paper ── */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink-950: #e9dfcb;
+  --color-ink-900: #f6f0e4;
+  --color-ink-850: #f0e8d8;
+  --color-ink-800: #fdf9f1;
+  --color-ink-750: #ffffff;
+  --color-ink-700: #e7dcc8;
+  --color-ink-600: #d9cbb3;
+  --color-ink-500: #c5b59b;
+
+  --color-fg: #1f2a78;
+  --color-fg-2: #36418a;
+  --color-fg-3: #5d6599;
+  --color-fg-4: #9599b8;
+
+  --color-lime: #ff4f9a;
+  --color-lime-2: #f0367f;
+  --color-coral: #ff7440;
+  --color-violet: #3255a4;
+  --color-violet-2: #26468f;
+  --color-sky: #4fa8e8;
+  --color-sun: #ffd23f;
+  --color-mint: #2fbf86;
+
+  --color-tx-lime: #c8105a;
+  --color-tx-coral: #c2410c;
+  --color-tx-violet: #2a4596;
+  --color-tx-sky: #1f5f9e;
+  --color-tx-sun: #8a6400;
+  --color-tx-mint: #00704f;
+
+  --color-on-accent: #1a2266;
+  --color-neutral: #d9cbb3;
+
+  --color-ok: #00704f;
+  --color-warn: #8a6400;
+  --color-bad: #c2410c;
+  --color-info: #1f5f9e;
+
+  --line: rgba(31, 42, 120, 0.14);
+  --line-strong: rgba(31, 42, 120, 0.32);
+  --dot: rgba(255, 79, 154, 0.13);
+  --ink-2: #3255a4;
+  --grain-blend: multiply;
+  --grain-opacity: 0.16;
+
+  --riso-line: #1f2a78;
+  --riso-paper: #fdf9f1;
+  --riso-light: #ffd23f;
+  --riso-mid: #ff4f9a;
+  --riso-deep: #3255a4;
+}
+
+/* Theme change: a soft circular ink wipe from the control that was clicked (View Transitions API). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: theme-reveal 680ms var(--ease-out-expo) both;
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0px at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-900);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-variation-settings: "opsz" 14;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+/* Headings use the expressive display face; body copy stays in DM Sans. */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 48;
+  letter-spacing: -0.035em;
+}
+
+/* Smooth colour changes on controls. (Not transform/opacity: Motion drives those inline.) */
+button,
+a,
+[role="tab"],
+[role="switch"] {
+  transition-property: color, background-color, border-color;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-snap);
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-on-accent);
+}
+
+/* Keyboard focus — a pink ink outline, never on mouse click. */
+:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+}
+
+/* ── Surfaces ───────────────────────────────────────────── */
+
+/* Standard card: flat, thin outline. */
+@utility surface {
+  background: var(--color-ink-800);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+/* Floating layer (menus, dialogs, toasts): ink outline + a blue plate offset. */
+@utility surface-raised {
+  background: var(--color-ink-800);
+  border: var(--bw) solid var(--color-fg);
+  box-shadow: 3px 4px 0 0 var(--ink-2);
+}
+
+/* "Featured" card: ink outline and a pink plate printed slightly off-register. */
+@utility surface-hero {
+  background: var(--color-ink-800);
+  border: var(--bw) solid var(--color-fg);
+  border-radius: 20px;
+  box-shadow: 5px 6px 0 0 var(--color-lime);
+}
+
+@utility text-echo {
+  color: var(--color-tx-lime);
+}
+
+@utility bg-echo {
+  background: var(--color-lime);
+}
+
+/* Active device outline. */
+@utility ring-echo {
+  border-color: var(--color-tx-lime) !important;
+  box-shadow: 0 var(--px) 0 0 var(--color-lime);
+}
+
+/* Small uppercase labels (the old pixel-font class; now a typewriter-ish mono). */
+@utility font-pixel {
+  font-family: var(--font-pixel);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Halftone dot screen, for decorative plates behind cards and art. */
+@utility halftone {
+  background-image: radial-gradient(color-mix(in srgb, var(--color-lime) 55%, transparent) 1.1px, transparent 1.4px);
+  background-size: 7px 7px;
+}
+
+/* Hard-shadow press physics shared by buttons. */
+@utility press {
+  transition:
+    transform 220ms var(--ease-spring),
+    box-shadow 220ms var(--ease-snap),
+    background-color 180ms var(--ease-snap),
+    color 180ms var(--ease-snap);
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  &:active:not(:disabled) {
+    transform: translateY(var(--px));
+    box-shadow: 0 0 0 0 transparent !important;
+  }
+}
+
+/* ── Ambient background: a faint pink halftone screen + paper grain ── */
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(var(--dot) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+}
+
+/* Paper grain over everything (static SVG noise; no animation, so it costs nothing per frame). */
+.app-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: var(--grain-blend);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1.1 -0.1'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ── Pixel VU meter cells (state set from rAF via data attributes) ── */
+.vu-cell {
+  display: block;
+  width: 7px;
+  height: 16px;
+  background: var(--color-ink-600);
+  transition: background-color 90ms ease-out;
+}
+.vu-cell[data-on="1"][data-zone="lime"],
+.vu-cell[data-on="p"][data-zone="lime"] {
+  background: var(--color-lime);
+}
+.vu-cell[data-on="1"][data-zone="sun"],
+.vu-cell[data-on="p"][data-zone="sun"] {
+  background: var(--color-sun);
+}
+.vu-cell[data-on="1"][data-zone="coral"],
+.vu-cell[data-on="p"][data-zone="coral"] {
+  background: var(--color-coral);
+}
+.vu-cell[data-on="p"] {
+  box-shadow: inset 0 0 0 1.5px var(--color-fg);
+}
+.vu-mini {
+  gap: 2px !important;
+}
+.vu-mini .vu-cell {
+  width: 3px;
+  height: 10px;
+}
+.vu-mini .vu-cell[data-zone] {
+  --c: var(--color-lime);
+}
+.vu-mini .vu-cell[data-on="1"] {
+  background: var(--color-lime);
+}
+/* Mini meter drawn on a lime badge: ink cells. */
+.vu-on-lime .vu-cell { background: color-mix(in srgb, var(--color-on-accent) 25%, transparent); }
+.vu-on-lime .vu-cell[data-on="1"], .vu-on-lime .vu-cell[data-on="p"] { background: var(--color-on-accent); box-shadow: none; }
+
+/* ── Pixel slider (Radix) ── */
+.px-track { position: relative; flex-grow: 1; height: 10px; border-radius: 6px; border: 1.6px solid var(--color-fg-4); background: var(--color-ink-900); overflow: hidden; }
+.px-range { position: absolute; height: 100%; background: var(--color-lime); }
+.px-range-sky { background: var(--color-sky); }
+.px-thumb { display: block; width: 14px; height: 22px; border-radius: 5px; background: var(--color-ink-750); border: 1.6px solid var(--color-fg); box-shadow: 2px 3px 0 0 var(--color-lime); transition: transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-snap); }
+.px-thumb:hover { transform: translateY(-1px); }
+.px-thumb:active { transform: translate(1px, 2px) scale(0.96); box-shadow: 1px 1px 0 0 var(--color-lime); }
+.px-thumb:focus-visible { outline: 2px solid var(--color-lime); outline-offset: 2px; }
+
+/* Off-register second plate behind large sprites (see Sprite). */
+.riso-ghost {
+  opacity: 0.32;
+  mix-blend-mode: var(--grain-blend);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Zine layout pieces
+   ══════════════════════════════════════════════════════════════ */
+
+/* Display headline: clean ink with a soft pink plate a touch off-register; the plate eases in on mount. */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  color: var(--color-fg);
+  text-shadow: 0.05em 0.05em 0 var(--shift-ink);
+  animation: shift-in 0.9s var(--ease-out-expo) 0.1s both;
+}
+@keyframes shift-in {
+  from {
+    text-shadow: 0.25em -0.12em 0 transparent;
+  }
+}
+:root {
+  --shift-ink: color-mix(in srgb, var(--color-lime) 45%, transparent);
+}
+:root[data-theme="light"] {
+  --shift-ink: color-mix(in srgb, var(--color-lime) 38%, transparent);
+}
+
+/* ── The masthead wordmark: hand-set letters that drop in, then wave with the music ── */
+.wordmark {
+  display: inline-flex;
+  align-items: flex-end;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  cursor: default;
+  --amp: 1.5px;
+}
+.wm-drop {
+  display: inline-block;
+  animation: wm-drop 0.8s var(--ease-spring) calc(var(--i) * 70ms + 150ms) both;
+}
+.wm-letter {
+  display: inline-block;
+  rotate: var(--r);
+  transform-origin: 50% 85%;
+  color: var(--color-fg);
+  text-shadow: 0.06em 0.05em 0 var(--shift-ink);
+  animation: wm-wave 1.6s ease-in-out calc(var(--i) * -0.16s) infinite;
+  transition:
+    rotate 380ms var(--ease-spring),
+    color 200ms var(--ease-snap),
+    text-shadow 200ms var(--ease-snap),
+    scale 380ms var(--ease-spring);
+}
+.wm-drop:nth-child(odd) .wm-letter {
+  color: var(--color-tx-lime);
+  text-shadow: 0.06em 0.05em 0 color-mix(in srgb, var(--ink-2) 40%, transparent);
+}
+.wordmark:hover .wm-letter {
+  rotate: calc(var(--r) * -1.6);
+  scale: 1.12;
+  animation-duration: 0.5s;
+}
+.wordmark:hover .wm-drop:nth-child(odd) .wm-letter {
+  color: var(--color-fg);
+  text-shadow: 0.06em 0.05em 0 var(--shift-ink);
+}
+.wordmark:hover .wm-drop:nth-child(even) .wm-letter {
+  color: var(--color-tx-lime);
+  text-shadow: 0.06em 0.05em 0 color-mix(in srgb, var(--ink-2) 40%, transparent);
+}
+@keyframes wm-drop {
+  from {
+    transform: translateY(-26px) scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes wm-wave {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 calc(var(--amp) * -1);
+  }
+}
+
+/* Soft pink panel behind the now-playing art and card (no outline). */
+.np-panel {
+  position: relative;
+  isolation: isolate;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--color-lime) 10%, transparent);
+}
+
+/* Halftone dot field and a solid ink disc that overlap like two riso plates. */
+.ht-dots {
+  position: absolute;
+  border-radius: 50%;
+  background-image: radial-gradient(var(--color-sun) 2.6px, transparent 3px);
+  background-size: 7px 7px;
+  animation: plate-a 1.2s var(--ease-out-expo) both;
+}
+.ink-disc {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.85;
+  mix-blend-mode: var(--grain-blend);
+  animation: plate-b 1.2s var(--ease-out-expo) 0.08s both;
+}
+@keyframes plate-a {
+  from {
+    transform: translate(-30px, 20px) scale(0.8);
+    opacity: 0;
+  }
+}
+@keyframes plate-b {
+  from {
+    transform: translate(30px, -20px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+/* Rubber stamp label: thunks down when it appears. */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transform: rotate(-6deg);
+  border: 2px solid var(--color-tx-lime);
+  color: var(--color-tx-lime);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--font-pixel);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: stamp-thunk 0.55s var(--ease-spring) 0.35s both;
+}
+@keyframes stamp-thunk {
+  from {
+    transform: rotate(-20deg) scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Round "coin" buttons (mode switch). */
+.coin {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--color-fg);
+  transition:
+    transform 380ms var(--ease-spring),
+    box-shadow 300ms var(--ease-snap),
+    background-color 220ms var(--ease-snap);
+}
+.coin-btn:hover .coin {
+  transform: rotate(-8deg) scale(1.06);
+}
+.coin-btn:active .coin {
+  transform: scale(0.94);
+}
+.coin-btn[aria-checked="true"] .coin {
+  box-shadow: 3px 3px 0 0 var(--ink-2);
+}
+
+/* Setlist (priority list) rows. */
+.set-row {
+  border-top: 2px dotted var(--line-strong);
+}
+.set-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.6px var(--color-fg-3);
+  transition: color 250ms var(--ease-snap), -webkit-text-stroke-color 250ms;
+}
+.set-row:hover .set-num {
+  -webkit-text-stroke-color: var(--color-fg);
+}
+.set-num[data-live="true"] {
+  color: var(--color-lime);
+  -webkit-text-stroke: 0;
+  text-shadow: 0.06em 0.045em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
+}
+
+/* Highlighter swipe behind the playing device's name. */
+.hl {
+  position: relative;
+  isolation: isolate;
+}
+.hl::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -6px;
+  bottom: 0.08em;
+  height: 0.55em;
+  z-index: -1;
+  background: var(--color-sun);
+  opacity: var(--hl-opacity, 1);
+  border-radius: 3px 8px 4px 6px;
+  transform-origin: left;
+  animation: hl-swipe 0.8s var(--ease-out-expo) 0.45s both;
+}
+:root:not([data-theme="light"]) {
+  --hl-opacity: 0.35;
+}
+@keyframes hl-swipe {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Paper tabs on the masthead rule. */
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 15px;
+  margin-bottom: -2px;
+  border: 2px solid transparent;
+  border-bottom: 0;
+  border-radius: 11px 11px 0 0;
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  color: var(--color-fg-3);
+  transition:
+    transform 320ms var(--ease-spring),
+    color 180ms var(--ease-snap);
+}
+.tab:hover {
+  transform: translateY(-3px);
+  color: var(--color-fg);
+}
+.tab[aria-current="page"] {
+  color: var(--color-on-accent);
+}
+.tab[aria-current="page"]:hover {
+  transform: none;
+}
+.tab-fill {
+  position: absolute;
+  inset: -2px -2px 0;
+  border: 2px solid var(--color-fg);
+  border-bottom: 0;
+  border-radius: 11px 11px 0 0;
+  background: var(--color-lime);
+}
+
+/* The paper card holding the now-playing details inside the pink panel. */
+.np-card {
+  background: var(--color-ink-800);
+  border: 2px solid var(--color-fg);
+  border-radius: 18px;
+  box-shadow: 4px 5px 0 0 color-mix(in srgb, var(--color-lime) 70%, transparent);
+  overflow: hidden;
+}
+.np-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-top: 2px dotted var(--line-strong);
+}
+.np-split > * + * {
+  border-left: 2px dotted var(--line-strong);
+}
+.np-foot {
+  border-top: 2px dotted var(--line-strong);
+}
+@media (max-width: 900px) {
+  .np-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .np-split > * + * {
+    border-left: 0;
+    border-top: 2px dotted var(--line-strong);
+  }
+}
+
+/* Live level history under the volume slider (see LevelBars). */
+.level-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 40px;
+}
+.level-bars > span {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--color-lime);
+  transform-origin: 50% 100%;
+  transform: scaleY(0.06);
+  transition: transform 90ms linear;
+}
+.level-bars.is-input > span {
+  background: var(--color-sky);
+}
+.level-bars.is-idle > span {
+  background: var(--color-fg-4);
+}
