@@ -85,7 +85,7 @@ export function VolumeMenu({ device, flow, label }: { device: DeviceView; flow: 
                 <Slider.Track className="px-track">
                   <Slider.Range className="px-range px-range-sky" />
                 </Slider.Track>
-                <Slider.Thumb className="px-thumb" />
+                <Slider.Thumb className="px-thumb" aria-label="Volume to apply when switched to" />
               </Slider.Root>
               <span className="w-10 text-right font-mono text-[12px] tabular-nums text-fg-2">{percent(level)}</span>
             </div>

@@ -56,7 +56,7 @@ export const DeviceCard = forwardRef<HTMLDivElement, CardProps>(function DeviceC
         "set-row group relative flex flex-wrap items-center gap-x-4 gap-y-2 pr-2",
         available || overlay ? "py-3.5" : "py-2",
         "transition-[transform,opacity,background-color] duration-300 [transition-timing-function:var(--ease-spring)]",
-        !overlay && !placeholder && "hover:translate-x-[6px]",
+        !overlay && !placeholder && "can-nudge",
         !available && !overlay && "opacity-55 hover:opacity-90",
         placeholder && "rounded-[14px] !border-2 !border-dashed !border-tx-lime [&>*]:opacity-0",
         overlay && "cursor-grabbing rounded-[16px] !border-2 !border-solid !border-fg bg-ink-800 px-3 shadow-[6px_8px_0_0_var(--color-lime)] [transform:rotate(-1.2deg)_scale(1.02)]",

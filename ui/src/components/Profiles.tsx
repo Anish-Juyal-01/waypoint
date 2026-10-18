@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Layers, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "../store/store";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { Button, IconButton } from "./ui";
 import { ProfilePal } from "../pals/Critter";
 import { PalPicker, profilePal } from "../pals/PalPicker";
@@ -33,6 +34,7 @@ export function ManageProfilesDialog({ open, onOpenChange }: { open: boolean; on
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [newName, setNewName] = useState("");
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const commit = (id: string) => {
     if (draft.trim()) send({ type: "renameProfile", id, name: draft.trim() });
@@ -40,6 +42,7 @@ export function ManageProfilesDialog({ open, onOpenChange }: { open: boolean; on
   };
 
   return (
+    <>
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
         {open && (
@@ -114,7 +117,7 @@ export function ManageProfilesDialog({ open, onOpenChange }: { open: boolean; on
                       >
                         <Pencil size={14} />
                       </IconButton>
-                      <IconButton label={profiles.length <= 1 ? "Can't delete the only profile" : "Delete"} disabled={profiles.length <= 1} onClick={() => send({ type: "deleteProfile", id: p.id })} className="hover:!text-bad">
+                      <IconButton label={profiles.length <= 1 ? "Can't delete the only profile" : "Delete"} disabled={profiles.length <= 1} onClick={() => setDeleting({ id: p.id, name: p.name })} className="hover:!text-bad">
                         <Trash2 size={14} />
                       </IconButton>
                     </li>
@@ -148,5 +151,15 @@ export function ManageProfilesDialog({ open, onOpenChange }: { open: boolean; on
         )}
       </AnimatePresence>
     </Dialog.Root>
+    <ConfirmDialog
+      open={deleting !== null}
+      onOpenChange={(v) => !v && setDeleting(null)}
+      title={`Delete "${deleting?.name ?? ""}"?`}
+      description="Its output and microphone rankings and modes are removed for good. Your devices and other profiles aren't affected."
+      confirmLabel="Delete profile"
+      danger
+      onConfirm={() => deleting && send({ type: "deleteProfile", id: deleting.id })}
+    />
+    </>
   );
 }

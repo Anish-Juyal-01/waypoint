@@ -106,9 +106,9 @@ export function NowPlayingCard({ flow }: { flow: Flow }) {
   const title = name?.primary ?? `No ${text.noun}`;
 
   return (
-    <section aria-labelledby={`now-${flow}`} className="np-panel grid grid-cols-[230px_minmax(0,1fr)] items-center gap-x-6 gap-y-4 p-5 max-sm:grid-cols-1">
+    <section aria-labelledby={`now-${flow}`} className="np-panel grid grid-cols-[230px_minmax(0,1fr)] items-center gap-x-6 gap-y-4 p-5 max-[860px]:grid-cols-1">
       {/* Art: two plates + the pal */}
-      <div className="relative h-[230px] w-[230px]" aria-hidden>
+      <div className="relative h-[230px] w-[230px] max-[860px]:mx-auto" aria-hidden>
         <div className="ht-dots" style={{ width: 176, height: 176, left: 4, top: 40 }} />
         <div className="ink-disc" style={{ width: 132, height: 132, left: 80, top: 8, background: flow === "input" ? "var(--color-sky)" : "var(--color-lime)" }} />
         <div className="absolute" style={{ left: 50, top: 62 }}>

@@ -107,7 +107,16 @@ export function Switch({
 export function Tooltip({ content, children, side = "top" }: { content: ReactNode; children: ReactNode; side?: "top" | "bottom" | "left" | "right" }) {
   return (
     <RadixTooltip.Root>
-      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
+      {/* Only keyboard focus (focus-visible) opens the tooltip, so a dialog or popover that moves focus into
+          itself when it opens doesn't pop a tooltip over its own content. */}
+      <RadixTooltip.Trigger
+        asChild
+        onFocus={(e) => {
+          if (!e.currentTarget.matches(":focus-visible")) e.preventDefault();
+        }}
+      >
+        {children}
+      </RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           side={side}

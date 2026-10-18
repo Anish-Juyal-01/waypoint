@@ -608,9 +608,16 @@ a,
   box-shadow: 3px 3px 0 0 var(--ink-2);
 }
 
-/* Setlist (priority list) rows. */
+/* Setlist (priority list) rows. On hover the row's contents nudge right; the row itself (and its dotted rule)
+   stays put. */
 .set-row {
   border-top: 2px dotted var(--line-strong);
+}
+.set-row > * {
+  transition: transform 300ms var(--ease-spring);
+}
+.set-row.can-nudge:hover > * {
+  transform: translateX(6px);
 }
 .set-num {
   font-family: var(--font-display);

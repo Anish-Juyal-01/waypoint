@@ -71,7 +71,7 @@ export function VolumeControl({ deviceId, volume, flow, label, className }: { de
         <Slider.Track className="px-track">
           <Slider.Range className="px-range" />
         </Slider.Track>
-        <Slider.Thumb className="px-thumb" />
+        <Slider.Thumb className="px-thumb" aria-label={`${label} volume`} />
       </Slider.Root>
       <span className="font-pixel w-12 text-right text-[11px] text-fg">{muted ? "Muted" : percent(local)}</span>
     </div>

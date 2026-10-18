@@ -110,7 +110,7 @@ export function SettingsView() {
                   <Slider.Track className="px-track">
                     <Slider.Range className="px-range" />
                   </Slider.Track>
-                  <Slider.Thumb className="px-thumb" />
+                  <Slider.Thumb className="px-thumb" aria-label="Connection settle delay" />
                 </Slider.Root>
                 <span className="font-pixel w-14 text-right text-[11px] text-fg">{(delay / 1000).toFixed(2)}s</span>
               </div>
