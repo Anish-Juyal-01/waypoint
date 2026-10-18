@@ -167,6 +167,14 @@ public sealed class RenameMigrationTests : IDisposable
     }
 
     [Fact]
+    public void Sign_in_task_text_is_plain_ascii_apart_from_user_and_path()
+    {
+        // Anything non-ASCII here once broke reading the task back through the console code page.
+        var xml = Waypoint.Core.Platform.StartupManager.BuildTaskXml(@"PC\me", @"C:\W.exe");
+        Assert.All(xml, c => Assert.True(c < 128, $"non-ASCII character U+{(int)c:X4}"));
+    }
+
+    [Fact]
     public void Disabled_sign_in_task_is_reported_off()
     {
         // A task switched off in Task Scheduler has <Enabled>false</Enabled> in its Settings block.

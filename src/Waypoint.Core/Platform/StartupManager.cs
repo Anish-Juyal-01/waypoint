@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Principal;
 using System.Xml.Linq;
@@ -14,7 +14,7 @@ namespace Waypoint.Core.Platform;
 /// entry can be skipped at sign-in for days. A sign-in task runs reliably. Any old Run entry for this app is removed
 /// when the task is created, so the app is never launched twice.
 /// </summary>
-public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Engine.IStartupRegistration
+public sealed class StartupManager(string name = "Waypoint", string? executablePath = null) : Waypoint.Core.Engine.IStartupRegistration
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
@@ -24,7 +24,8 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
     /// <summary>The Run value the app used when it was called EchoLock.</summary>
     public const string LegacyValueName = "EchoLock";
 
-    public static string ExecutablePath => Environment.ProcessPath ?? throw new InvalidOperationException("Unknown process path.");
+    /// <summary>The executable the startup entry should launch: this process unless another path was given (diagnostics).</summary>
+    public string ExecutablePath => executablePath ?? Environment.ProcessPath ?? throw new InvalidOperationException("Unknown process path.");
 
     /// <summary>True when the sign-in task exists, is enabled, and starts this executable.</summary>
     public bool IsEnabled => ReadTask() is { Enabled: true } task && SamePath(task.Command, ExecutablePath);
@@ -44,8 +45,7 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
         }
         else
         {
-            ForgetTask();
-            if (ReadTask() is not null) Schtasks("/Delete", "/TN", name, "/F");
+            DeleteTask();
             RemoveRunEntry(name);
         }
 
@@ -84,11 +84,28 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
     private TaskInfo? _task;
     private DateTime _taskReadAt = DateTime.MinValue;
 
+    // Task Scheduler is used through its COM API ("Schedule.Service"), not schtasks.exe: schtasks' console output
+    // goes through the OEM code page, which mangles non-ASCII text (a user name or folder with accents, or any
+    // symbol in the description) into characters that aren't valid XML.
+    private const int TaskCreateOrUpdate = 6;
+    private const int TaskLogonInteractiveToken = 3;
+
     private TaskInfo? ReadTask()
     {
         if (DateTime.UtcNow - _taskReadAt < TaskCacheFor) return _task;
-        var (code, output) = Schtasks("/Query", "/TN", name, "/XML");
-        _task = code == 0 ? ParseTask(output) : null;
+        _task = WithRootFolder<TaskInfo?>(folder =>
+        {
+            try
+            {
+                var task = folder.GetTask(name);
+                var info = ParseTask((string)task.Xml);
+                return info is null ? null : info with { Enabled = info.Enabled && (bool)task.Enabled };
+            }
+            catch (COMException)
+            {
+                return null; // not registered
+            }
+        });
         _taskReadAt = DateTime.UtcNow;
         return _task;
     }
@@ -97,16 +114,48 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
 
     private void CreateTask(string exe)
     {
-        var file = Path.Combine(Path.GetTempPath(), $"waypoint-task-{Guid.NewGuid():N}.xml");
+        var xml = BuildTaskXml(WindowsIdentity.GetCurrent().Name, exe);
         try
         {
-            File.WriteAllText(file, BuildTaskXml(WindowsIdentity.GetCurrent().Name, exe), System.Text.Encoding.Unicode);
-            var (code, output) = Schtasks("/Create", "/TN", name, "/XML", file, "/F");
-            if (code != 0) throw new InvalidOperationException($"Couldn't create the sign-in task: {output.Trim()}");
+            WithRootFolder<object?>(folder => folder.RegisterTask(name, xml, TaskCreateOrUpdate, null, null, TaskLogonInteractiveToken, null));
+        }
+        catch (COMException ex)
+        {
+            throw new InvalidOperationException($"Couldn't create the sign-in task (0x{ex.HResult:X8}): {ex.Message}", ex);
+        }
+    }
+
+    private void DeleteTask()
+    {
+        ForgetTask();
+        WithRootFolder<object?>(folder =>
+        {
+            try { folder.DeleteTask(name, 0); }
+            catch (COMException) { } // already gone
+            return null;
+        });
+    }
+
+    private static T WithRootFolder<T>(Func<dynamic, T> action)
+    {
+        var type = Type.GetTypeFromProgID("Schedule.Service") ?? throw new InvalidOperationException("Task Scheduler isn't available.");
+        dynamic service = Activator.CreateInstance(type)!;
+        try
+        {
+            service.Connect();
+            dynamic folder = service.GetFolder(@"\");
+            try
+            {
+                return action(folder);
+            }
+            finally
+            {
+                Marshal.FinalReleaseComObject(folder);
+            }
         }
         finally
         {
-            try { File.Delete(file); } catch (IOException) { }
+            Marshal.FinalReleaseComObject(service);
         }
     }
 
@@ -120,7 +169,7 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
             <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
               <RegistrationInfo>
                 <Author>Waypoint</Author>
-                <Description>Starts Waypoint in the notification area when you sign in. Turn it off in Waypoint → Settings → Start with Windows.</Description>
+                <Description>Starts Waypoint in the notification area when you sign in. Turn it off in Waypoint: Settings, Start with Windows.</Description>
               </RegistrationInfo>
               <Triggers>
                 <LogonTrigger><Enabled>true</Enabled><UserId>{u}</UserId></LogonTrigger>
@@ -156,28 +205,6 @@ public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Eng
         {
             return null;
         }
-    }
-
-    private static (int Code, string Output) Schtasks(params string[] args)
-    {
-        var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "schtasks.exe"))
-        {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        foreach (var a in args) psi.ArgumentList.Add(a);
-        using var p = Process.Start(psi)!;
-        var stdout = p.StandardOutput.ReadToEndAsync();
-        var stderr = p.StandardError.ReadToEndAsync();
-        if (!p.WaitForExit(15_000))
-        {
-            try { p.Kill(); } catch (InvalidOperationException) { }
-            return (-1, "schtasks timed out");
-        }
-
-        return (p.ExitCode, stdout.Result + stderr.Result);
     }
 
     // ── Legacy Run entries ─────────────────────────────────────

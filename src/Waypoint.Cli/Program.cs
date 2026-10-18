@@ -6,6 +6,7 @@ using Waypoint.Core.Audio;
 //   waypoint-cli switch <index|id>    set the default output (verified) [--comm to include Communications]
 //   waypoint-cli volume <index|id> [0-100|mute|unmute]   read or set master volume
 //   waypoint-cli watch                print endpoint notifications until Ctrl+C
+//   waypoint-cli startup [exe]        show whether Start with Windows is on for exe (default: the installed copy)
 //   waypoint-cli meter                print the default device's peak level for a few seconds (with --input it
 //                                     opens the same silent monitor stream the app uses, since mics aren't metered otherwise)
 // Add --input to any command to work with microphones instead of outputs.
@@ -94,6 +95,17 @@ internal static class Program
                     Console.WriteLine(hr == 0 ? "route set" : $"failed 0x{hr:X8}");
                     Console.WriteLine($"read back: '{audio.GetAppRoute(pid, flow)}'");
                     return hr == 0 ? 0 : 2;
+                }
+
+            case "startup":
+                {
+                    var exe = args.ElementAtOrDefault(1)
+                              ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Waypoint", "Waypoint.exe");
+                    var startup = new Waypoint.Core.Platform.StartupManager(executablePath: exe);
+                    Console.WriteLine($"exe:      {exe}");
+                    Console.WriteLine($"enabled:  {startup.IsEnabled}");
+                    Console.WriteLine($"conflict: {startup.ForeignCommand ?? "(none)"}");
+                    return 0;
                 }
 
             case "meter":
