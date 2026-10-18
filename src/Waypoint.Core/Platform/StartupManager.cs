@@ -93,19 +93,22 @@ public sealed class StartupManager(string name = "Waypoint", string? executableP
     private TaskInfo? ReadTask()
     {
         if (DateTime.UtcNow - _taskReadAt < TaskCacheFor) return _task;
-        _task = WithRootFolder<TaskInfo?>(folder =>
+        // COM errors come through the dynamic binder as mapped .NET exceptions (a missing task is a
+        // FileNotFoundException, not a COMException), so catch broadly: reading the startup state must never stop
+        // the app from starting.
+        try
         {
-            try
+            _task = WithRootFolder<TaskInfo?>(folder =>
             {
                 var task = folder.GetTask(name);
                 var info = ParseTask((string)task.Xml);
                 return info is null ? null : info with { Enabled = info.Enabled && (bool)task.Enabled };
-            }
-            catch (COMException)
-            {
-                return null; // not registered
-            }
-        });
+            });
+        }
+        catch (Exception)
+        {
+            _task = null; // not registered, or Task Scheduler unavailable: treat as off
+        }
         _taskReadAt = DateTime.UtcNow;
         return _task;
     }
@@ -119,7 +122,7 @@ public sealed class StartupManager(string name = "Waypoint", string? executableP
         {
             WithRootFolder<object?>(folder => folder.RegisterTask(name, xml, TaskCreateOrUpdate, null, null, TaskLogonInteractiveToken, null));
         }
-        catch (COMException ex)
+        catch (Exception ex) when (ex is not InvalidOperationException)
         {
             throw new InvalidOperationException($"Couldn't create the sign-in task (0x{ex.HResult:X8}): {ex.Message}", ex);
         }
@@ -128,12 +131,18 @@ public sealed class StartupManager(string name = "Waypoint", string? executableP
     private void DeleteTask()
     {
         ForgetTask();
-        WithRootFolder<object?>(folder =>
+        try
         {
-            try { folder.DeleteTask(name, 0); }
-            catch (COMException) { } // already gone
-            return null;
-        });
+            WithRootFolder<object?>(folder =>
+            {
+                folder.DeleteTask(name, 0);
+                return null;
+            });
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or COMException)
+        {
+            // Already gone.
+        }
     }
 
     private static T WithRootFolder<T>(Func<dynamic, T> action)

@@ -167,6 +167,15 @@ public sealed class RenameMigrationTests : IDisposable
     }
 
     [Fact]
+    public void Missing_sign_in_task_reads_as_off_without_throwing()
+    {
+        // Read-only query against the real Task Scheduler for a task name that can't exist.
+        var startup = new Waypoint.Core.Platform.StartupManager("Waypoint-test-" + Guid.NewGuid().ToString("N"), @"C:\Nowhere\Waypoint.exe");
+        Assert.False(startup.IsEnabled);
+        Assert.Null(startup.ForeignCommand);
+    }
+
+    [Fact]
     public void Sign_in_task_text_is_plain_ascii_apart_from_user_and_path()
     {
         // Anything non-ASCII here once broke reading the task back through the console code page.
