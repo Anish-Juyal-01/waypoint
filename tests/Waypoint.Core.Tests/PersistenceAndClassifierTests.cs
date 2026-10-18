@@ -154,16 +154,25 @@ public sealed class RenameMigrationTests : IDisposable
     public void Run_command_executable_is_parsed(string command, string exe) =>
         Assert.Equal(exe, Waypoint.Core.Platform.StartupManager.ExtractExecutable(command));
 
-    [Theory]
-    [InlineData(new byte[] { 0x02, 0, 0, 0 }, true)]
-    [InlineData(new byte[] { 0x06, 0, 0, 0 }, true)]
-    [InlineData(new byte[] { 0x03, 0, 0, 0 }, false)]
-    [InlineData(new byte[] { 0x07, 0, 0, 0 }, false)]
-    [InlineData(new byte[0], false)]
-    public void Windows_startup_switch_is_read(byte[] record, bool approved) =>
-        Assert.Equal(approved, Waypoint.Core.Platform.StartupManager.IsApproved(record));
+    [Fact]
+    public void Sign_in_task_round_trips_its_command()
+    {
+        var xml = Waypoint.Core.Platform.StartupManager.BuildTaskXml(@"PC\me & you", @"C:\Apps\Way <point>\Waypoint.exe");
+        var task = Waypoint.Core.Platform.StartupManager.ParseTask(xml);
+        Assert.NotNull(task);
+        Assert.Equal(@"C:\Apps\Way <point>\Waypoint.exe", task!.Command);
+        Assert.True(task.Enabled);
+        Assert.Contains("<LogonTrigger>", xml);
+        Assert.Contains("--minimized", xml);
+    }
 
     [Fact]
-    public void Missing_startup_approval_counts_as_off() =>
-        Assert.False(Waypoint.Core.Platform.StartupManager.IsApproved(null));
+    public void Disabled_sign_in_task_is_reported_off()
+    {
+        // A task switched off in Task Scheduler has <Enabled>false</Enabled> in its Settings block.
+        var disabled = System.Text.RegularExpressions.Regex.Replace(
+            Waypoint.Core.Platform.StartupManager.BuildTaskXml(@"PC\me", @"C:\W.exe"),
+            @"(<Priority>5</Priority>\s*)<Enabled>true</Enabled>", "$1<Enabled>false</Enabled>");
+        Assert.False(Waypoint.Core.Platform.StartupManager.ParseTask(disabled)!.Enabled);
+    }
 }

@@ -40,7 +40,8 @@ Waypoint is a single portable `.exe` — no installer, and you don't need .NET o
    genuine build (`Get-FileHash .\Waypoint.exe` in PowerShell).
 5. **Rank your devices**: drag them into order on the **Devices** page. Waypoint switches to the highest one that's
    connected and keeps it that way. Do the same for mics on **Microphones** (mic switching starts **Off**).
-6. Want it always running? **Settings → Start with Windows**. Closing the window keeps Waypoint in the tray (bottom
+6. Want it always running? **Settings → Start with Windows** (it adds a sign-in task in Task Scheduler, so it won't
+   appear in Task Manager's *Startup apps* list). Closing the window keeps Waypoint in the tray (bottom
    right, near the clock); right-click the tray icon to switch output, profile or mode, or **Quit Waypoint**.
 
 **Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the new one, start it again. Your rankings,
@@ -141,7 +142,8 @@ Everything stays on the PC:
 - `%APPDATA%\Waypoint\settings.json` — modes, priority lists, profiles, exclusions, names, switch volumes, shortcuts
 - `%APPDATA%\Waypoint\activity.jsonl` — activity log (last 2000 entries)
 - `%LOCALAPPDATA%\Waypoint\WebView2` — UI cache
-- Start with Windows: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Waypoint`
+- Start with Windows: a per-user Task Scheduler task named **Waypoint** that runs at sign-in (no admin rights).
+  Windows' older "Run" registry list can skip newly added apps for days, so Waypoint doesn't use it.
 - Microphone: Windows only reports a mic's level while some app has it open, so while the **Microphones** page is on
   screen Waypoint opens the default mic silently to draw its level bars (Windows shows its "microphone in use" icon).
   Nothing is recorded or saved, and it's closed as soon as you leave the page or hide the window.

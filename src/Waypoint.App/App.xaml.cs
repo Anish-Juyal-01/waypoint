@@ -50,7 +50,10 @@ public partial class App : Application
             ex.Handled = true;
         };
 
-        _instance = SingleInstance.TryAcquire(() => Dispatcher.BeginInvoke(() => _ = ShowWindowAsync()));
+        // A second copy started at sign-in (e.g. by both an old startup entry and the sign-in task) exits quietly;
+        // one the user starts brings the running window forward.
+        bool atLogin = e.Args.Contains(StartupManager.MinimizedArg, StringComparer.OrdinalIgnoreCase);
+        _instance = SingleInstance.TryAcquire(() => Dispatcher.BeginInvoke(() => _ = ShowWindowAsync()), activateExisting: !atLogin);
         if (_instance is null)
         {
             Shutdown();
@@ -62,7 +65,8 @@ public partial class App : Application
         {
             startup.MigrateLegacyEntry();
         }
-        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException
+                                       or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             // Not fatal; the user can re-enable "Start with Windows" in Settings.
         }

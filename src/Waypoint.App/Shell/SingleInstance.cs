@@ -17,14 +17,14 @@ internal sealed class SingleInstance : IDisposable
         _wait = ThreadPool.RegisterWaitForSingleObject(activate, (_, _) => onActivate(), null, Timeout.Infinite, executeOnlyOnce: false);
     }
 
-    /// <summary>Returns null (after signalling the running instance) if Waypoint is already running.</summary>
-    public static SingleInstance? TryAcquire(Action onActivate)
+    /// <summary>Returns null if Waypoint is already running (after asking it to show its window, unless told not to).</summary>
+    public static SingleInstance? TryAcquire(Action onActivate, bool activateExisting = true)
     {
         var mutex = new Mutex(initiallyOwned: true, MutexName, out bool created);
         var activate = new EventWaitHandle(false, EventResetMode.AutoReset, EventName);
         if (!created)
         {
-            activate.Set();
+            if (activateExisting) activate.Set();
             activate.Dispose();
             mutex.Dispose();
             return null;

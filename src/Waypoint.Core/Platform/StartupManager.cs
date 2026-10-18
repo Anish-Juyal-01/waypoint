@@ -1,104 +1,216 @@
+using System.Diagnostics;
+using System.Security;
+using System.Security.Principal;
+using System.Xml.Linq;
 using Microsoft.Win32;
 
 namespace Waypoint.Core.Platform;
 
 /// <summary>
-/// Per-user "start with Windows" via HKCU\Software\Microsoft\Windows\CurrentVersion\Run, plus Windows' own on/off
-/// switch for that entry (Explorer\StartupApproved\Run — what Task Manager and Settings → Apps → Startup toggle).
-/// Explorer skips a Run entry that switch marks disabled, and on current Windows 11 builds also one that has no
-/// approval record at all, so both are written together.
+/// "Start with Windows" as a per-user Task Scheduler task with a sign-in trigger (no admin rights needed).
+///
+/// Earlier versions used HKCU\...\CurrentVersion\Run. Explorer only launches Run entries it already knows from its
+/// startup-app inventory (the list Task Manager shows), which Windows rebuilds only occasionally, so a new or renamed
+/// entry can be skipped at sign-in for days. A sign-in task runs reliably. Any old Run entry for this app is removed
+/// when the task is created, so the app is never launched twice.
 /// </summary>
-public sealed class StartupManager(string valueName = "Waypoint") : Waypoint.Core.Engine.IStartupRegistration
+public sealed class StartupManager(string name = "Waypoint") : Waypoint.Core.Engine.IStartupRegistration
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+    private static readonly XNamespace TaskNs = "http://schemas.microsoft.com/windows/2004/02/mit/task";
     public const string MinimizedArg = "--minimized";
 
     /// <summary>The Run value the app used when it was called EchoLock.</summary>
     public const string LegacyValueName = "EchoLock";
 
-    /// <summary>Approval record meaning "enabled": 0x02 followed by an empty timestamp (as Task Manager writes it).</summary>
-    private static readonly byte[] Approved = [0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
     public static string ExecutablePath => Environment.ProcessPath ?? throw new InvalidOperationException("Unknown process path.");
 
-    /// <summary>True only when the Run entry points at this executable and Windows hasn't switched it off.</summary>
-    public bool IsEnabled => PointsHere && !DisabledByWindows;
+    /// <summary>True when the sign-in task exists, is enabled, and starts this executable.</summary>
+    public bool IsEnabled => ReadTask() is { Enabled: true } task && SamePath(task.Command, ExecutablePath);
 
-    private bool PointsHere => ReadCommand() is { } command && command.Contains(ExecutablePath, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Windows' startup switch for the entry is off (Task Manager / Settings), or was never approved.</summary>
-    public bool DisabledByWindows => !IsApproved(ReadApproval(valueName));
-
-    public string? ForeignCommand => ReadCommand() is { } command && !PointsHere ? command : null;
-
-    public string? ReadCommand()
-    {
-        using var key = Registry.CurrentUser.OpenSubKey(RunKey);
-        return key?.GetValue(valueName) as string;
-    }
+    /// <summary>The existing startup command when it points at a different executable (e.g. another copy), else null.</summary>
+    public string? ForeignCommand =>
+        ReadTask() is { } task && !SamePath(task.Command, ExecutablePath) ? task.Command
+        : ReadRunCommand() is { } run && !SamePath(ExtractExecutable(run), ExecutablePath) ? run
+        : null;
 
     public void SetEnabled(bool enabled)
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RunKey, writable: true);
-        using var approved = Registry.CurrentUser.CreateSubKey(ApprovedKey, writable: true);
         if (enabled)
         {
-            key.SetValue(valueName, $"\"{ExecutablePath}\" {MinimizedArg}");
-            approved.SetValue(valueName, Approved, RegistryValueKind.Binary);
+            CreateTask(ExecutablePath);
+            RemoveRunEntry(name);
         }
         else
         {
-            if (key.GetValue(valueName) is not null) key.DeleteValue(valueName);
-            if (approved.GetValue(valueName) is not null) approved.DeleteValue(valueName);
+            ForgetTask();
+            if (ReadTask() is not null) Schtasks("/Delete", "/TN", name, "/F");
+            RemoveRunEntry(name);
         }
+
+        ForgetTask();
     }
 
     /// <summary>
-    /// After the rename: if the old "EchoLock" startup entry points at an executable that no longer exists (the
-    /// pre-rename build), replace it with a "Waypoint" entry for this executable. Entries that point at a program
-    /// that still exists are someone else's and are left untouched. Windows' on/off record for the old name is carried
-    /// over to the new one, so a choice made in Task Manager survives. Returns true when it migrated.
+    /// Upgrades older registrations. A Run entry (from 1.1.x, or named "EchoLock" from before the rename) that starts
+    /// this executable or one that no longer exists becomes a sign-in task for this executable; entries that start a
+    /// different program that still exists are left alone. Returns true when something was migrated.
     /// </summary>
     public bool MigrateLegacyEntry()
     {
-        bool migrated = false;
+        bool wanted = false;
+        foreach (var value in new[] { name, LegacyValueName })
+        {
+            if (ReadRunCommand(value) is not { } command) continue;
+            var exe = ExtractExecutable(command);
+            if (exe is not null && File.Exists(exe) && !SamePath(exe, ExecutablePath)) continue;
+            RemoveRunEntry(value);
+            wanted = true;
+        }
+
+        if (wanted && ReadTask() is null) CreateTask(ExecutablePath);
+        ForgetTask();
+        return wanted;
+    }
+
+    // ── Task Scheduler ─────────────────────────────────────────
+
+    internal sealed record TaskInfo(string? Command, bool Enabled);
+
+    // The settings view reads this on every state update, so the lookup is cached briefly (changes made here
+    // invalidate it immediately; changes made in Task Scheduler itself show up within the cache window).
+    private static readonly TimeSpan TaskCacheFor = TimeSpan.FromSeconds(30);
+    private TaskInfo? _task;
+    private DateTime _taskReadAt = DateTime.MinValue;
+
+    private TaskInfo? ReadTask()
+    {
+        if (DateTime.UtcNow - _taskReadAt < TaskCacheFor) return _task;
+        var (code, output) = Schtasks("/Query", "/TN", name, "/XML");
+        _task = code == 0 ? ParseTask(output) : null;
+        _taskReadAt = DateTime.UtcNow;
+        return _task;
+    }
+
+    private void ForgetTask() => _taskReadAt = DateTime.MinValue;
+
+    private void CreateTask(string exe)
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"waypoint-task-{Guid.NewGuid():N}.xml");
+        try
+        {
+            File.WriteAllText(file, BuildTaskXml(WindowsIdentity.GetCurrent().Name, exe), System.Text.Encoding.Unicode);
+            var (code, output) = Schtasks("/Create", "/TN", name, "/XML", file, "/F");
+            if (code != 0) throw new InvalidOperationException($"Couldn't create the sign-in task: {output.Trim()}");
+        }
+        finally
+        {
+            try { File.Delete(file); } catch (IOException) { }
+        }
+    }
+
+    /// <summary>Per-user sign-in task: runs only in the user's own session, normal priority, no time limit.</summary>
+    internal static string BuildTaskXml(string user, string exe)
+    {
+        var u = SecurityElement.Escape(user);
+        var x = SecurityElement.Escape(exe);
+        return $"""
+            <?xml version="1.0" encoding="UTF-16"?>
+            <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+              <RegistrationInfo>
+                <Author>Waypoint</Author>
+                <Description>Starts Waypoint in the notification area when you sign in. Turn it off in Waypoint → Settings → Start with Windows.</Description>
+              </RegistrationInfo>
+              <Triggers>
+                <LogonTrigger><Enabled>true</Enabled><UserId>{u}</UserId></LogonTrigger>
+              </Triggers>
+              <Principals>
+                <Principal id="Author"><UserId>{u}</UserId><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal>
+              </Principals>
+              <Settings>
+                <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+                <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+                <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+                <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+                <Priority>5</Priority>
+                <Enabled>true</Enabled>
+              </Settings>
+              <Actions Context="Author">
+                <Exec><Command>{x}</Command><Arguments>{MinimizedArg}</Arguments></Exec>
+              </Actions>
+            </Task>
+            """;
+    }
+
+    internal static TaskInfo? ParseTask(string xml)
+    {
+        try
+        {
+            var doc = XDocument.Parse(xml);
+            var command = doc.Descendants(TaskNs + "Exec").Elements(TaskNs + "Command").FirstOrDefault()?.Value.Trim().Trim('"');
+            var enabled = doc.Root?.Element(TaskNs + "Settings")?.Element(TaskNs + "Enabled")?.Value;
+            return new TaskInfo(command, !string.Equals(enabled, "false", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (System.Xml.XmlException)
+        {
+            return null;
+        }
+    }
+
+    private static (int Code, string Output) Schtasks(params string[] args)
+    {
+        var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "schtasks.exe"))
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        using var p = Process.Start(psi)!;
+        var stdout = p.StandardOutput.ReadToEndAsync();
+        var stderr = p.StandardError.ReadToEndAsync();
+        if (!p.WaitForExit(15_000))
+        {
+            try { p.Kill(); } catch (InvalidOperationException) { }
+            return (-1, "schtasks timed out");
+        }
+
+        return (p.ExitCode, stdout.Result + stderr.Result);
+    }
+
+    // ── Legacy Run entries ─────────────────────────────────────
+
+    private string? ReadRunCommand(string? value = null)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(RunKey);
+        return key?.GetValue(value ?? name) as string;
+    }
+
+    private static void RemoveRunEntry(string value)
+    {
         using (var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true))
         {
-            if (key?.GetValue(LegacyValueName) is string legacy)
-            {
-                var exe = ExtractExecutable(legacy);
-                if (exe is null || File.Exists(exe)) return false;
-                key.DeleteValue(LegacyValueName);
-                if (key.GetValue(valueName) is null) key.SetValue(valueName, $"\"{ExecutablePath}\" {MinimizedArg}");
-                migrated = true;
-            }
-            else if (key?.GetValue(LegacyValueName) is not null)
-            {
-                return false;
-            }
+            if (key?.GetValue(value) is not null) key.DeleteValue(value);
         }
 
-        // The old Run value is gone (just now or by an earlier version): move its approval record across.
         using var approved = Registry.CurrentUser.OpenSubKey(ApprovedKey, writable: true);
-        if (approved?.GetValue(LegacyValueName) is byte[] record)
-        {
-            if (approved.GetValue(valueName) is null) approved.SetValue(valueName, record, RegistryValueKind.Binary);
-            approved.DeleteValue(LegacyValueName);
-            migrated = true;
-        }
-
-        return migrated;
+        if (approved?.GetValue(value) is not null) approved.DeleteValue(value);
     }
 
-    private byte[]? ReadApproval(string name)
+    private static bool SamePath(string? a, string? b)
     {
-        using var key = Registry.CurrentUser.OpenSubKey(ApprovedKey);
-        return key?.GetValue(name) as byte[];
+        if (a is null || b is null) return false;
+        try
+        {
+            return string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
     }
-
-    /// <summary>The first byte is even (0x02, 0x06) when enabled and odd (0x03, 0x07) when switched off.</summary>
-    internal static bool IsApproved(byte[]? record) => record is { Length: > 0 } && record[0] % 2 == 0;
 
     internal static string? ExtractExecutable(string command)
     {

@@ -339,9 +339,10 @@ public sealed class WaypointService
                 changes.Add(sw ? "Start with Windows on" : "Start with Windows off");
                 if (replaced is not null) Log(ActivityKind.Settings, "Replaced previous startup entry", $"It launched: {replaced}");
             }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+            catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException
+                                           or InvalidOperationException or System.ComponentModel.Win32Exception)
             {
-                Log(ActivityKind.Warning, "Couldn't change the startup entry", ex.Message);
+                Log(ActivityKind.Warning, "Couldn't change Start with Windows", ex.Message);
             }
         }
 
