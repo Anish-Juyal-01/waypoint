@@ -153,4 +153,17 @@ public sealed class RenameMigrationTests : IDisposable
     [InlineData(@"C:\Apps\EchoLock.exe", @"C:\Apps\EchoLock.exe")]
     public void Run_command_executable_is_parsed(string command, string exe) =>
         Assert.Equal(exe, Waypoint.Core.Platform.StartupManager.ExtractExecutable(command));
+
+    [Theory]
+    [InlineData(new byte[] { 0x02, 0, 0, 0 }, true)]
+    [InlineData(new byte[] { 0x06, 0, 0, 0 }, true)]
+    [InlineData(new byte[] { 0x03, 0, 0, 0 }, false)]
+    [InlineData(new byte[] { 0x07, 0, 0, 0 }, false)]
+    [InlineData(new byte[0], false)]
+    public void Windows_startup_switch_is_read(byte[] record, bool approved) =>
+        Assert.Equal(approved, Waypoint.Core.Platform.StartupManager.IsApproved(record));
+
+    [Fact]
+    public void Missing_startup_approval_counts_as_off() =>
+        Assert.False(Waypoint.Core.Platform.StartupManager.IsApproved(null));
 }
