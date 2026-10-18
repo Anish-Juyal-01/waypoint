@@ -23,14 +23,19 @@ the best available one as the Windows default output, switching automatically wh
 
 ## Download and run
 
-Waypoint is a single portable `.exe` — no installer, and you don't need .NET or anything else installed.
+Waypoint is a single portable `.exe` — no installer. Each release has two downloads; both contain the same app:
+
+| Download | Size | Use it if |
+|---|---|---|
+| `Waypoint-<version>-win-x64.zip` | about 60 MB | you're not sure — it has everything built in and runs on any PC |
+| `Waypoint-<version>-win-x64-lite.zip` | under 1 MB | you already have the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (if you don't, Windows offers to download it the first time you open Waypoint) |
 
 1. **Check your PC**: Windows 10 (version 1809 or newer) or Windows 11, 64-bit. Waypoint draws its window with
    Microsoft Edge WebView2, which is already on Windows 11 and on almost every up-to-date Windows 10 PC. If Waypoint
    says it's missing, install the free
    [Evergreen WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) and start it again.
-2. **Download** `Waypoint.exe` from the [latest release](https://github.com/Anish-Juyal-01/waypoint/releases/latest)
-   (under **Assets**, about 150 MB).
+2. **Download** one of the zips above from the [latest release](https://github.com/Anish-Juyal-01/waypoint/releases/latest)
+   (under **Assets**), then right-click it → **Extract All**. Inside is `Waypoint.exe`.
 3. **Give it a permanent home** (optional, but do it if you'll use *Start with Windows*): make a folder such as
    `C:\Users\<you>\AppData\Local\Programs\Waypoint` or `C:\Tools\Waypoint` and move `Waypoint.exe` into it.
    *Start with Windows* remembers the exe's location, so it shouldn't stay in Downloads if you tidy that folder.
@@ -46,7 +51,7 @@ Waypoint is a single portable `.exe` — no installer, and you don't need .NET o
    appear in Task Manager's *Startup apps* list). Closing the window keeps Waypoint in the tray (bottom
    right, near the clock); right-click the tray icon to switch output, profile or mode, or **Quit Waypoint**.
 
-**Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the new one, start it again. Your rankings,
+**Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the one from the new zip, start it again. Your rankings,
 profiles and history live in `%APPDATA%\Waypoint` and are kept.
 
 **Uninstalling**: turn off *Start with Windows* and *Show in Start menu*, quit from the tray, delete `Waypoint.exe`, and delete
@@ -57,7 +62,7 @@ profiles and history live in `%APPDATA%\Waypoint` and are kept.
 You only need this to change the code. Requirements: Windows 10/11 x64, .NET SDK 10, Node.js 20+.
 
 ```powershell
-# Full pipeline: UI build + tests + self-contained single-file publish → dist\Waypoint.exe
+# Full pipeline: UI build + tests + publish → dist\Waypoint.exe, dist\lite\Waypoint.exe and the release zips in dist\release
 ./scripts/build.ps1
 
 # Day-to-day development

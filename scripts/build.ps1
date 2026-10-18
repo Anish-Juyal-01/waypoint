@@ -5,7 +5,8 @@
 .DESCRIPTION
   1. Installs UI dependencies (if needed) and builds the React UI (ui/dist).
   2. Runs the UI unit tests (Vitest) and the .NET unit tests (xUnit).
-  3. Publishes a self-contained, single-file Waypoint.exe for win-x64 to ./dist.
+  3. Publishes Waypoint.exe for win-x64 to ./dist (self-contained) and ./dist/lite (needs the .NET 10
+     Desktop Runtime), and zips each into ./dist/release for GitHub releases.
 
 .PARAMETER SkipTests
   Skip both test suites.
@@ -43,10 +44,18 @@ if (-not $SkipTests) {
 Step "Publishing Waypoint ($Runtime)"
 $out = Join-Path $root "dist"
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
-dotnet publish src/Waypoint.App/Waypoint.App.csproj -c Release -r $Runtime --self-contained true `
-    -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-    -p:DebugType=none -p:SatelliteResourceLanguages=en -o $out --nologo
+$common = @("-c", "Release", "-r", $Runtime, "-p:PublishSingleFile=true", "-p:IncludeNativeLibrariesForSelfExtract=true",
+            "-p:DebugType=none", "-p:SatelliteResourceLanguages=en", "--nologo")
+
+# Full build: carries its own .NET, runs on any Windows 10/11 PC. Not compressed inside the exe: that would make
+# every launch unpack ~150 MB into memory. The release zip compresses it instead.
+dotnet publish src/Waypoint.App/Waypoint.App.csproj --self-contained true @common -o $out
 Check "dotnet publish"
+
+# Lite build: a few MB, uses the .NET Desktop Runtime installed on the PC (Windows offers to install it if missing).
+$lite = Join-Path $out "lite"
+dotnet publish src/Waypoint.App/Waypoint.App.csproj --self-contained false @common -o $lite
+Check "lite publish"
 
 dotnet publish src/Waypoint.Cli/Waypoint.Cli.csproj -c Release -r $Runtime --self-contained true `
     -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o (Join-Path $out "tools") --nologo
@@ -55,5 +64,19 @@ Check "CLI publish"
 # XML IntelliSense docs from NuGet packages are not needed at runtime.
 Get-ChildItem $out -Filter *.xml -Recurse | Remove-Item -Force
 
-$exe = Join-Path $out "Waypoint.exe"
-Step ("Done: {0} ({1:N1} MB)" -f $exe, ((Get-Item $exe).Length / 1MB))
+# Release downloads: each zip holds a single Waypoint.exe.
+$version = ([xml](Get-Content (Join-Path $root "Directory.Build.props"))).Project.PropertyGroup.Version
+$release = Join-Path $out "release"
+New-Item -ItemType Directory $release | Out-Null
+$zips = [ordered]@{
+    "Waypoint-$version-$Runtime.zip"      = Join-Path $out "Waypoint.exe"
+    "Waypoint-$version-$Runtime-lite.zip" = Join-Path $lite "Waypoint.exe"
+}
+foreach ($name in $zips.Keys) {
+    Compress-Archive -Path $zips[$name] -DestinationPath (Join-Path $release $name) -CompressionLevel Optimal
+}
+
+Step "Done"
+foreach ($file in @((Join-Path $out "Waypoint.exe"), (Join-Path $lite "Waypoint.exe")) + (Get-ChildItem $release).FullName) {
+    Write-Host ("  {0,-60} {1,7:N1} MB" -f $file.Substring($root.Length + 1), ((Get-Item $file).Length / 1MB))
+}
