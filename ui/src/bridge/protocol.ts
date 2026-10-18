@@ -90,6 +90,8 @@ export interface SettingsView {
   /** Existing Run entry that launches a different copy of Waypoint (read-only). */
   startupConflict?: string | null;
   startMinimized: boolean;
+  /** A Start menu shortcut exists, so Windows search finds Waypoint. */
+  startMenuShortcut: boolean;
   closeToTray: boolean;
   notifyOnSwitch: boolean;
   showOsd: boolean;

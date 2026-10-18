@@ -16,6 +16,7 @@ public sealed class WaypointService
     private readonly IRuntimeScheduler _scheduler;
     private readonly SettingsStore? _store;
     private readonly IStartupRegistration? _startup;
+    private readonly IShortcutRegistration? _shortcut;
 
     private Dictionary<string, HotkeyStatus> _hotkeyStatus = [];
     private VolumeInfo? _lastOutputVolume;
@@ -28,7 +29,8 @@ public sealed class WaypointService
         ActivityLog log,
         IRuntimeScheduler scheduler,
         SettingsStore? store = null,
-        IStartupRegistration? startup = null)
+        IStartupRegistration? startup = null,
+        IShortcutRegistration? shortcut = null)
     {
         _audio = audio;
         _settings = settings;
@@ -36,6 +38,7 @@ public sealed class WaypointService
         _scheduler = scheduler;
         _store = store;
         _startup = startup;
+        _shortcut = shortcut;
         _settings.Normalize();
 
         Output = new PriorityController(AudioFlow.Render, audio, settings, log, scheduler, Save);
@@ -71,6 +74,8 @@ public sealed class WaypointService
 
         if (!_audio.CanSwitch)
             Log(ActivityKind.Warning, "Automatic switching unavailable", _audio.SwitchUnavailableReason);
+
+        if (_settings.StartMenuShortcut) TryShortcut(s => s.EnsurePresent());
 
         var profile = _settings.ActiveProfile?.Name ?? "Default";
         Log(ActivityKind.Info, $"Waypoint started in {PriorityController.ModeName(_settings.Output.Mode)} mode",
@@ -346,6 +351,12 @@ public sealed class WaypointService
             }
         }
 
+        if (p.StartMenuShortcut is { } menu && _settings.StartMenuShortcut != menu)
+        {
+            _settings.StartMenuShortcut = menu;
+            if (TryShortcut(s => s.SetEnabled(menu))) changes.Add(menu ? "Added to the Start menu" : "Removed from the Start menu");
+        }
+
         if (p.StartMinimized is { } sm) _settings.StartMinimized = sm;
         if (p.CloseToTray is { } ct) _settings.CloseToTray = ct;
         if (p.NotifyOnSwitch is { } ns) _settings.NotifyOnSwitch = ns;
@@ -425,6 +436,22 @@ public sealed class WaypointService
     /// <summary>Keeps the silent capture stream on the current default mic open (or closes it), so its level can be shown.</summary>
     public void SyncCaptureMonitor(bool wanted) => _audio.SetCaptureMonitor(wanted ? Input.CurrentDefaultId : null);
 
+    /// <summary>Runs a Start menu shortcut operation; failures are logged, never thrown (it's a convenience).</summary>
+    private bool TryShortcut(Action<IShortcutRegistration> action)
+    {
+        if (_shortcut is null) return false;
+        try
+        {
+            action(_shortcut);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log(ActivityKind.Warning, "Couldn't update the Start menu shortcut", ex.Message);
+            return false;
+        }
+    }
+
     /// <summary>Publishes when the default devices' volume/mute changed outside Waypoint (volume keys, mixer).</summary>
     public void PollVolumes()
     {
@@ -444,6 +471,7 @@ public sealed class WaypointService
             StartWithWindows = _startup?.IsEnabled ?? false,
             StartupConflict = _startup?.ForeignCommand,
             StartMinimized = _settings.StartMinimized,
+            StartMenuShortcut = _shortcut?.Exists ?? _settings.StartMenuShortcut,
             CloseToTray = _settings.CloseToTray,
             NotifyOnSwitch = _settings.NotifyOnSwitch,
             ShowOsd = _settings.ShowOsd,

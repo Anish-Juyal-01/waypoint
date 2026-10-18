@@ -71,7 +71,7 @@ public partial class App : Application
             // Not fatal; the user can re-enable "Start with Windows" in Settings.
         }
 
-        _runtime = new WaypointRuntime(() => new CoreAudioSystem(), AppPaths.Default, startup);
+        _runtime = new WaypointRuntime(() => new CoreAudioSystem(), AppPaths.Default, startup, new StartMenuShortcut());
         _runtime.StateChanged += s => Dispatcher.BeginInvoke(() => OnState(s));
         _runtime.Switched += ev => Dispatcher.BeginInvoke(() => OnSwitched(ev));
         _runtime.Osd += m => Dispatcher.BeginInvoke(() => ShowOsd(m));

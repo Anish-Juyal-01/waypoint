@@ -61,6 +61,10 @@ public sealed record SettingsView
     public string? StartupConflict { get; init; }
 
     public bool StartMinimized { get; init; }
+
+    /// <summary>A Start menu shortcut exists, so Windows search finds Waypoint.</summary>
+    public bool StartMenuShortcut { get; init; }
+
     public bool CloseToTray { get; init; }
     public bool NotifyOnSwitch { get; init; }
     public bool ShowOsd { get; init; }

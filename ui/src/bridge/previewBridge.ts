@@ -92,6 +92,7 @@ export function createPreviewBridge(): Bridge {
   const settings: RuntimeSnapshot["settings"] = {
     startWithWindows: true,
     startMinimized: true,
+    startMenuShortcut: true,
     closeToTray: true,
     notifyOnSwitch: true,
     showOsd: true,

@@ -121,6 +121,10 @@ public sealed class AppSettings
     public Dictionary<string, HotkeyBinding?> Hotkeys { get; set; } = HotkeyActions.Defaults();
 
     public bool StartMinimized { get; set; } = true;
+
+    /// <summary>Keep a Start menu shortcut (recreated at startup if it went missing, unless turned off).</summary>
+    public bool StartMenuShortcut { get; set; } = true;
+
     public bool CloseToTray { get; set; } = true;
     public bool NotifyOnSwitch { get; set; } = true;
     public bool ShowOsd { get; set; } = true;

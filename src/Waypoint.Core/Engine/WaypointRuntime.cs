@@ -18,6 +18,7 @@ public sealed class WaypointRuntime : IDisposable
     private readonly Func<IAudioSystem> _audioFactory;
     private readonly AppPaths _paths;
     private readonly IStartupRegistration? _startup;
+    private readonly IShortcutRegistration? _shortcut;
     private readonly Thread _thread;
     private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly object _meterLock = new();
@@ -30,8 +31,9 @@ public sealed class WaypointRuntime : IDisposable
     private volatile bool _meterOn;
     private bool _disposed;
 
-    public WaypointRuntime(Func<IAudioSystem> audioFactory, AppPaths paths, IStartupRegistration? startup)
+    public WaypointRuntime(Func<IAudioSystem> audioFactory, AppPaths paths, IStartupRegistration? startup, IShortcutRegistration? shortcut = null)
     {
+        _shortcut = shortcut;
         _audioFactory = audioFactory;
         _paths = paths;
         _startup = startup;
@@ -138,7 +140,7 @@ public sealed class WaypointRuntime : IDisposable
             var log = new ActivityLog(_paths);
             if (store.RecoveredFromCorruption is { } msg) log.Add(ActivityKind.Warning, "Settings were reset", msg);
 
-            _service = new WaypointService(_audio, settings, log, new QueueScheduler(this), store, _startup);
+            _service = new WaypointService(_audio, settings, log, new QueueScheduler(this), store, _startup, _shortcut);
             _service.StateChanged += s =>
             {
                 LastSnapshot = s;

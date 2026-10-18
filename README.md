@@ -38,16 +38,18 @@ Waypoint is a single portable `.exe` — no installer, and you don't need .NET o
    *"Windows protected your PC"*. Click **More info → Run anyway** (only needed the first time). Some antivirus tools
    are suspicious of new unsigned single-file apps; the release notes list the file's SHA-256 so you can check it's the
    genuine build (`Get-FileHash .\Waypoint.exe` in PowerShell).
-5. **Rank your devices**: drag them into order on the **Devices** page. Waypoint switches to the highest one that's
+5. **Find it later**: Waypoint adds itself to the Start menu on first run, so typing "Waypoint" in Windows search
+   opens it (turn this off in **Settings → Show in Start menu**).
+6. **Rank your devices**: drag them into order on the **Devices** page. Waypoint switches to the highest one that's
    connected and keeps it that way. Do the same for mics on **Microphones** (mic switching starts **Off**).
-6. Want it always running? **Settings → Start with Windows** (it adds a sign-in task in Task Scheduler, so it won't
+7. Want it always running? **Settings → Start with Windows** (it adds a sign-in task in Task Scheduler, so it won't
    appear in Task Manager's *Startup apps* list). Closing the window keeps Waypoint in the tray (bottom
    right, near the clock); right-click the tray icon to switch output, profile or mode, or **Quit Waypoint**.
 
 **Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the new one, start it again. Your rankings,
 profiles and history live in `%APPDATA%\Waypoint` and are kept.
 
-**Uninstalling**: turn off *Start with Windows*, quit from the tray, delete `Waypoint.exe`, and delete
+**Uninstalling**: turn off *Start with Windows* and *Show in Start menu*, quit from the tray, delete `Waypoint.exe`, and delete
 `%APPDATA%\Waypoint` and `%LOCALAPPDATA%\Waypoint` if you also want your settings gone.
 
 ## Build from source

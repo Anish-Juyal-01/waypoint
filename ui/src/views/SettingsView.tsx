@@ -85,6 +85,7 @@ export function SettingsView() {
               "Launch Waypoint when you sign in, so priority applies from the first sound."
             ),
           )}
+          {toggle("startMenuShortcut", "Show in Start menu", "Adds Waypoint to the Start menu, so you can find it with Windows search.")}
           {toggle("startMinimized", "Start in the tray", "When launched at sign-in, stay in the notification area instead of opening the window.")}
           {toggle("closeToTray", "Keep running when closed", "The close button hides Waypoint to the tray. Quit from the tray menu.")}
           {toggle("showOsd", "On-screen indicator", "Show a small overlay above the taskbar when a shortcut runs or Waypoint switches devices while its window is in the background.")}

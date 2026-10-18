@@ -14,6 +14,7 @@ public sealed record SettingsPatch
 {
     public bool? StartWithWindows { get; init; }
     public bool? StartMinimized { get; init; }
+    public bool? StartMenuShortcut { get; init; }
     public bool? CloseToTray { get; init; }
     public bool? NotifyOnSwitch { get; init; }
     public bool? ShowOsd { get; init; }
@@ -28,13 +29,24 @@ public sealed record SettingsPatch
     public string? Theme { get; init; }
 }
 
-/// <summary>Abstraction over the Run-key startup entry (null object in tests).</summary>
+/// <summary>Abstraction over the "start with Windows" registration (null object in tests).</summary>
 public interface IStartupRegistration
 {
     bool IsEnabled { get; }
 
     /// <summary>The existing startup command when it points at a different executable (e.g. another copy), else null.</summary>
     string? ForeignCommand { get; }
+
+    void SetEnabled(bool enabled);
+}
+
+/// <summary>Abstraction over the Start menu shortcut (null object in tests).</summary>
+public interface IShortcutRegistration
+{
+    bool Exists { get; }
+
+    /// <summary>Creates the shortcut if missing (or if the program it opens is gone).</summary>
+    void EnsurePresent();
 
     void SetEnabled(bool enabled);
 }
