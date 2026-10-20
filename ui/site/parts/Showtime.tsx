@@ -160,8 +160,8 @@ export function Showtime() {
         <div className="lg:col-start-1 lg:row-start-1">
           <h2 className="headline text-[clamp(2.2rem,4.6vw,3.6rem)]">Run the show.</h2>
           <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-fg-2">
-            Rank the setlist and pull plugs. Then hit <MousePointerClick className="inline align-[-3px]" size={17} strokeWidth={2.3} aria-label="switch" /> on
-            any row to switch the output behind Waypoint's back, and see how each mode answers.
+            Rank the setlist and pull plugs. Then switch the output behind Waypoint's back, the way a game or Windows would,
+            and see how each mode answers.
           </p>
         </div>
 
@@ -228,6 +228,35 @@ export function Showtime() {
               )}
           </div>
           <p className="mt-3 max-w-[60ch] text-[0.92rem] text-fg-3">{blurb}</p>
+
+          {/* Someone else switches the output: one button per plugged-in device. */}
+          <div className="switch-bar mt-5">
+            <p className="flex items-center gap-2 font-mono text-[12px] text-fg-3">
+              <MousePointerClick size={15} strokeWidth={2.3} aria-hidden />
+              Switch the output behind Waypoint's back:
+            </p>
+            <div className="mt-2.5 flex flex-wrap gap-2" role="group" aria-label="Switch the output to">
+              {order.map((id) => {
+                const a = act(id);
+                const here = plugged.has(id);
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    className="switch-to"
+                    data-current={lit === id}
+                    onClick={() => switchTo(id)}
+                    disabled={!here || lit === id}
+                    title={!here ? `${a.name} is unplugged` : lit === id ? `${a.name} is already playing` : undefined}
+                  >
+                    {a.name}
+                    {lit === id && <span className="switch-to-tag">playing</span>}
+                    {!here && <span className="switch-to-tag">out</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="paper-sheet self-start lg:col-start-1 lg:row-start-2">
@@ -245,7 +274,6 @@ export function Showtime() {
                 playing={lit === id}
                 onToggle={() => togglePlug(id)}
                 onMove={(by) => move(id, by)}
-                onSwitch={() => switchTo(id)}
               />
             ))}
           </Reorder.Group>
@@ -264,7 +292,6 @@ function Row({
   playing,
   onToggle,
   onMove,
-  onSwitch,
 }: {
   id: ActId;
   rank: number;
@@ -274,7 +301,6 @@ function Row({
   playing: boolean;
   onToggle: () => void;
   onMove: (by: -1 | 1) => void;
-  onSwitch: () => void;
 }) {
   const controls = useDragControls();
   const a = act(id);
@@ -317,16 +343,6 @@ function Row({
           <ArrowDown size={15} strokeWidth={2.4} />
         </button>
       </span>
-      <button
-        type="button"
-        className="switch-btn"
-        onClick={onSwitch}
-        disabled={!plugged || playing}
-        aria-label={`Switch the output to ${a.name} behind Waypoint's back`}
-        title="Switch the output here, the way another app would"
-      >
-        <MousePointerClick size={15} strokeWidth={2.4} />
-      </button>
       <button type="button" className="plug-btn" aria-pressed={plugged} onClick={onToggle} aria-label={`${a.name}: ${plugged ? "plugged in" : "unplugged"}`}>
         {plugged ? <Plug size={15} strokeWidth={2.4} /> : <Unplug size={15} strokeWidth={2.4} />}
         <span>{plugged ? "In" : "Out"}</span>

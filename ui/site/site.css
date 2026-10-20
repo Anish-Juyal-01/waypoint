@@ -83,6 +83,37 @@ button {
   transform: translate(3px, 3px);
   box-shadow: 0 0 0 0 var(--ink-2);
 }
+/* Secondary slab: paper with an ink outline and a blue plate behind, the same shape as .btn-ink. */
+.btn-paper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15.5px;
+  white-space: nowrap;
+  color: var(--color-fg);
+  background: var(--paper);
+  border: 2px solid var(--riso-line);
+  box-shadow: 4px 4px 0 0 var(--ink-2);
+  transition:
+    transform 220ms var(--ease-spring),
+    box-shadow 220ms var(--ease-snap);
+}
+:root:not([data-theme="light"]) .btn-paper {
+  border-color: color-mix(in srgb, var(--color-fg) 60%, transparent);
+}
+.btn-paper:hover {
+  transform: translate(-1px, -2px) rotate(1deg);
+  box-shadow: 6px 6px 0 0 var(--ink-2);
+}
+.btn-paper:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 var(--ink-2);
+}
 .btn-sm {
   height: 38px;
   padding: 0 14px;
@@ -1194,33 +1225,58 @@ body {
   bottom: calc(100% + 4px);
 }
 
-/* "Switch the output here, behind Waypoint's back" button on each setlist row. */
-.switch-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+/* "Switch the output behind Waypoint's back" bar: one button per device. */
+.switch-bar {
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  border: 2px dashed color-mix(in srgb, var(--color-coral) 55%, transparent);
+  background: color-mix(in srgb, var(--color-coral) 7%, transparent);
+}
+.switch-to {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
   border-radius: 999px;
-  border: 2px solid var(--line-strong);
-  color: var(--color-fg-2);
+  border: 2px solid var(--riso-line);
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-fg);
+  box-shadow: 3px 3px 0 0 var(--color-coral);
   transition:
-    background-color 160ms,
-    color 160ms,
-    border-color 160ms,
-    transform 220ms var(--ease-spring);
+    transform 220ms var(--ease-spring),
+    box-shadow 220ms var(--ease-snap),
+    background-color 200ms;
 }
-.switch-btn:hover:not(:disabled) {
-  background: var(--color-coral);
-  border-color: var(--riso-line);
-  color: var(--color-on-accent);
-  transform: rotate(-10deg) scale(1.08);
+:root:not([data-theme="light"]) .switch-to {
+  border-color: color-mix(in srgb, var(--color-fg) 55%, transparent);
 }
-.switch-btn:active:not(:disabled) {
-  transform: scale(0.92);
+.switch-to:hover:not(:disabled) {
+  transform: translate(-1px, -2px) rotate(-1.5deg);
+  box-shadow: 5px 5px 0 0 var(--color-coral);
+  background: color-mix(in srgb, var(--color-coral) 22%, var(--paper));
 }
-.switch-btn:disabled {
-  opacity: 0.25;
+.switch-to:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 var(--color-coral);
+}
+.switch-to:disabled {
   cursor: default;
+  opacity: 0.5;
+  box-shadow: none;
+}
+.switch-to[data-current="true"] {
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-lime) 25%, var(--paper));
+}
+.switch-to-tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--color-fg-3);
 }
 
 /* ── Hero toys ── */

@@ -1,6 +1,6 @@
 import { MotionConfig } from "motion/react";
 import { useEffect, useState } from "react";
-import { Download, Moon, Sun } from "lucide-react";
+import { CodeXml, Download, Moon, Sun } from "lucide-react";
 import { Wordmark } from "./parts/Wordmark";
 import { DOWNLOAD, INSTALL_GUIDE, REPO } from "./parts/acts";
 import { Gig } from "./parts/Gig";
@@ -99,8 +99,9 @@ export function App() {
           <button type="button" className="icon-btn icon-btn-lg" onClick={toggle} aria-label={theme === "light" ? "Use dark theme" : "Use light theme"}>
             {theme === "light" ? <Moon size={17} strokeWidth={2.3} /> : <Sun size={17} strokeWidth={2.3} />}
           </button>
-          <a href={REPO} className="hidden font-mono text-[13px] text-fg-2 hover:text-fg sm:inline">
-            GitHub
+          <a href={REPO} className="btn-paper btn-sm" aria-label="Waypoint on GitHub">
+            <CodeXml size={15} strokeWidth={2.5} />
+            <span className="hidden sm:inline">GitHub</span>
           </a>
           <a href={DOWNLOAD} className="btn-ink btn-sm">
             <Download size={15} strokeWidth={2.5} />
