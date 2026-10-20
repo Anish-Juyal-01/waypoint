@@ -1429,52 +1429,19 @@ body {
 }
 
 /* ── Hero toys ── */
-/* The headline's rolling device word, on its own line so the first line never reflows. The slot has room above and
-   below for the marker loop, which would otherwise be clipped with the roll. */
+/* The headline's rolling device word, on its own line so the first line never reflows. */
 .roll-slot {
   display: block;
   position: relative;
   overflow: hidden;
-  padding: 0.16em 0.3em 0.2em;
-  margin: -0.16em -0.3em -0.2em;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
 }
 .roll-word {
-  position: relative;
   display: inline-block;
-  padding: 0 0.22em;
-  margin-left: -0.22em;
   transform-origin: 0 100%;
   color: var(--color-tx-lime);
   text-shadow: 0.05em 0.05em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
-}
-.roll-loop {
-  position: absolute;
-  inset: -0.08em 0 -0.12em;
-  width: 100%;
-  height: calc(100% + 0.2em);
-  overflow: visible;
-  pointer-events: none;
-}
-.roll-loop path {
-  fill: none;
-  stroke: var(--ink-2);
-  stroke-width: 3.5px;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: loop-draw 0.7s var(--ease-out-expo) 0.25s forwards;
-}
-@keyframes loop-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .roll-loop path {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
 }
 /* A blinking on-air light in the stamp. */
 .on-air {
