@@ -892,14 +892,12 @@ body {
     var(--back-b);
 }
 
-/* Record sleeve: each section is an album sleeve printed in its own ink, with a faint ring-wear mark, and a vinyl
+/* Record sleeve: each section is an album sleeve printed in its own ink, with a vinyl
    record peeking out from behind its right edge, slowly spinning. The record sits on ::before at z -1, so it's
    behind the sleeve but never clips anything inside it. */
 :root[data-bg="sleeve"] .venue-panel {
   border-radius: 6px;
   background:
-    /* ring wear: the outline of the record pressing through the card */
-    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
     /* a darker strip down the spine */
     linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 18px),
     color-mix(in srgb, var(--tint) 24%, var(--paper));
@@ -909,7 +907,6 @@ body {
 }
 :root[data-bg="sleeve"][data-theme="light"] .venue-panel {
   background:
-    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
     linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
     color-mix(in srgb, var(--tint) 20%, var(--paper));
   box-shadow:
@@ -974,7 +971,6 @@ body {
   background:
     linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
     linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
-    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
     linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 18px),
     color-mix(in srgb, var(--tint) 24%, var(--paper));
   box-shadow: var(--paste-shadow);
@@ -983,7 +979,6 @@ body {
   background:
     linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
     linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
-    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
     linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
     color-mix(in srgb, var(--tint) 20%, var(--paper));
 }
