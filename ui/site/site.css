@@ -690,9 +690,8 @@ button {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Section frames. Every section sits in a .venue-panel; how that
-   panel is drawn depends on html[data-bg] (picked with the dev-only
-   switcher at the bottom of the page). Decorations live on the panel
+   Section frames: every section is a record sleeve pasted up on a
+   poster wall (.venue-panel). Decorations live on the panel
    background or on ::before/::after at z -1, never on a clip or mask
    of the panel itself, so a falling stage can always leave it.
    ══════════════════════════════════════════════════════════════ */
@@ -700,17 +699,11 @@ button {
   --wall: var(--color-ink-900);
   --paper: #29172f;
   --tape: rgba(255, 228, 239, 0.3);
-  --case: #231f28;
-  --case-edge: #8f8a98;
-  --metal: #c9c5cf;
   --paste-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.7);
 }
 :root[data-theme="light"] {
   --paper: #fdf9f1;
   --tape: rgba(255, 210, 63, 0.7);
-  --case: #e4e1e8;
-  --case-edge: #6f6a78;
-  --metal: #9d98a6;
   --paste-shadow: 0 2px 0 rgba(31, 42, 120, 0.12), 0 14px 30px -18px rgba(31, 42, 120, 0.45);
 }
 body {
@@ -751,169 +744,9 @@ body {
   --back-b: var(--color-lime);
 }
 
-/* Riso card: paper, an ink outline and a hard offset shadow, like the app's own cards. */
-:root[data-bg="riso"] .venue-panel {
-  background:
-    linear-gradient(color-mix(in srgb, var(--tint) 10%, transparent), color-mix(in srgb, var(--tint) 10%, transparent)),
-    var(--paper);
-  border: 2.5px solid var(--riso-line);
-  box-shadow: 8px 8px 0 0 color-mix(in srgb, var(--tint) 70%, var(--ink-2));
-}
-:root[data-bg="riso"]:not([data-theme="light"]) .venue-panel {
-  border-color: color-mix(in srgb, var(--color-fg) 55%, transparent);
-}
-
-/* Misprint: no fill, a pink and a blue outline printed slightly off-register. */
-:root[data-bg="misprint"] .venue-panel::before,
-:root[data-bg="misprint"] .venue-panel::after {
-  content: "";
-  inset: 0;
-  border-radius: inherit;
-}
-:root[data-bg="misprint"] .venue-panel::before {
-  border: 3px solid var(--color-lime);
-  translate: 7px 6px;
-}
-:root[data-bg="misprint"] .venue-panel::after {
-  border: 3px solid var(--ink-2);
-}
-
-/* Road case: a flight case with metal corners and a double edge. */
-:root[data-bg="roadcase"] .venue-panel {
-  border-radius: 10px;
-  background:
-    linear-gradient(var(--metal), var(--metal)) 0 0 / 26px 26px no-repeat,
-    linear-gradient(var(--metal), var(--metal)) 100% 0 / 26px 26px no-repeat,
-    linear-gradient(var(--metal), var(--metal)) 0 100% / 26px 26px no-repeat,
-    linear-gradient(var(--metal), var(--metal)) 100% 100% / 26px 26px no-repeat,
-    linear-gradient(color-mix(in srgb, var(--tint) 8%, transparent), color-mix(in srgb, var(--tint) 8%, transparent)),
-    var(--case);
-  border: 3px solid var(--case-edge);
-  box-shadow:
-    inset 0 0 0 7px var(--case),
-    inset 0 0 0 9px color-mix(in srgb, var(--case-edge) 60%, transparent),
-    0 10px 0 -2px color-mix(in srgb, var(--case-edge) 45%, transparent);
-}
-
-/* Ticket: punched notches on both sides and a dashed perforation, drawn on the pseudo-elements so nothing inside is
-   clipped. */
-:root[data-bg="ticket"] .venue-panel::before {
-  content: "";
-  inset: 0;
-  border-radius: 16px;
-  background:
-    linear-gradient(color-mix(in srgb, var(--tint) 30%, transparent), color-mix(in srgb, var(--tint) 30%, transparent)),
-    var(--paper);
-  -webkit-mask:
-    radial-gradient(circle at 0 50%, transparent 22px, #000 22.5px) left / 51% 100% no-repeat,
-    radial-gradient(circle at 100% 50%, transparent 22px, #000 22.5px) right / 51% 100% no-repeat;
-  mask:
-    radial-gradient(circle at 0 50%, transparent 22px, #000 22.5px) left / 51% 100% no-repeat,
-    radial-gradient(circle at 100% 50%, transparent 22px, #000 22.5px) right / 51% 100% no-repeat;
-}
-:root[data-bg="ticket"] .venue-panel::after {
-  content: "";
-  inset: 12px 34px;
-  border: 2px dashed color-mix(in srgb, var(--color-fg) 30%, transparent);
-  border-radius: 8px;
-}
-
-/* Valance: full-width bands with a scalloped curtain edge hanging along the top. */
-:root[data-bg="valance"] main > section {
-  padding-left: 0;
-  padding-right: 0;
-}
-:root[data-bg="valance"] .venue-panel {
-  max-width: none;
-  border-radius: 0;
-  padding-top: clamp(40px, 5vw, 64px);
-  background:
-    linear-gradient(color-mix(in srgb, var(--tint) 14%, transparent), color-mix(in srgb, var(--tint) 14%, transparent)),
-    var(--paper);
-}
-:root[data-bg="valance"] .venue-panel::before {
-  content: "";
-  inset: 0 0 auto;
-  height: 26px;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0, var(--tint) 13px, transparent 13.5px) 0 0 / 30px 26px repeat-x;
-}
-
-/* Torn paper: a ragged sheet drawn on ::before. */
-:root[data-bg="torn"] .venue-panel::before {
-  content: "";
-  inset: -6px 0;
-  background:
-    linear-gradient(color-mix(in srgb, var(--tint) 16%, transparent), color-mix(in srgb, var(--tint) 16%, transparent)),
-    var(--paper);
-  clip-path: polygon(0 1.5%, 4% 0, 9% 1.2%, 15% 0.2%, 22% 1.4%, 28% 0.3%, 35% 1.1%, 41% 0, 48% 1.3%, 55% 0.2%, 61% 1.2%, 68% 0.1%, 75% 1.4%, 81% 0.3%, 88% 1.2%, 94% 0, 100% 1.1%, 100% 98.6%, 96% 100%, 90% 98.8%, 84% 99.8%, 77% 98.6%, 70% 99.7%, 63% 98.9%, 56% 100%, 49% 98.7%, 42% 99.8%, 35% 98.8%, 28% 100%, 21% 98.7%, 14% 99.8%, 7% 98.9%, 0 99.6%);
-}
-
-/* Poster wall: paper taped at the top with two older posters peeking out behind. */
-:root[data-bg="poster"] {
-  --wall: #160b1b;
-}
-:root[data-bg="poster"][data-theme="light"] {
-  --wall: #e3d6bf;
-}
-:root[data-bg="poster"] .venue-panel {
-  border-radius: 6px;
-  background:
-    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
-    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
-    linear-gradient(color-mix(in srgb, var(--tint) 12%, transparent), color-mix(in srgb, var(--tint) 12%, transparent)),
-    var(--paper);
-  box-shadow: var(--paste-shadow);
-}
-:root[data-bg="poster"] .venue-panel::before,
-:root[data-bg="poster"] .venue-panel::after {
-  content: "";
-  border-radius: 4px;
-  box-shadow: var(--paste-shadow);
-}
-:root[data-bg="poster"] .venue-panel::before {
-  top: -16px;
-  left: -10px;
-  width: 46%;
-  height: 58%;
-  rotate: -2.4deg;
-  background:
-    radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
-    var(--back-a);
-}
-:root[data-bg="poster"] .venue-panel::after {
-  right: -12px;
-  bottom: -16px;
-  width: 38%;
-  height: 52%;
-  rotate: 1.9deg;
-  background:
-    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-line) 18%, transparent) 0 6px, transparent 6px 16px),
-    var(--back-b);
-}
-
-/* Record sleeve: each section is an album sleeve printed in its own ink, with a vinyl
-   record peeking out from behind its right edge, slowly spinning. The record sits on ::before at z -1, so it's
-   behind the sleeve but never clips anything inside it. */
-:root[data-bg="sleeve"] .venue-panel {
-  border-radius: 6px;
-  background:
-    /* a darker strip down the spine */
-    linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 18px),
-    color-mix(in srgb, var(--tint) 24%, var(--paper));
-  box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.25),
-    0 18px 34px -22px rgba(0, 0, 0, 0.75);
-}
-:root[data-bg="sleeve"][data-theme="light"] .venue-panel {
-  background:
-    linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
-    color-mix(in srgb, var(--tint) 20%, var(--paper));
-  box-shadow:
-    0 1px 0 rgba(31, 42, 120, 0.15),
-    0 18px 34px -22px rgba(31, 42, 120, 0.5);
-}
-:root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
+/* The record: a vinyl disc behind each sleeve's right edge, spinning, on ::before at z -1 so it never clips
+   anything inside the sleeve. */
+.venue-panel::before {
   content: "";
   top: 50%;
   right: 0;
@@ -938,7 +771,7 @@ body {
   animation: vinyl 7s linear infinite;
 }
 /* Leave room on the right of every sleeve for its record to slide out. */
-:root:is([data-bg="sleeve"], [data-bg="mix"]) main > section {
+main > section {
   padding-right: clamp(64px, 14vw, 210px);
 }
 @keyframes vinyl {
@@ -950,10 +783,10 @@ body {
    further out as it leaves. Spinning (time) and sliding (scroll) use separate properties, so they combine. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel {
+    .venue-panel {
       view-timeline-name: --sleeve;
     }
-    :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
+    .venue-panel::before {
       animation:
         vinyl 7s linear infinite,
         vinyl-slide linear both;
@@ -974,26 +807,26 @@ body {
   }
 }
 @media (max-width: 640px) {
-  :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
+  .venue-panel::before {
     height: min(44%, 240px);
     translate: 30% -50%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
+  .venue-panel::before {
     animation: none;
   }
 }
 
-/* Poster + sleeve: sleeves pasted up on the poster wall. Tape across the top corners, an older halftone poster
+/* The sleeve itself, pasted up on the wall. Tape across the top corners, an older halftone poster
    peeking out behind the top left (on ::after), and the record sliding out of the right edge (shared ::before). */
-:root[data-bg="mix"] {
+:root {
   --wall: #160b1b;
 }
-:root[data-bg="mix"][data-theme="light"] {
+:root[data-theme="light"] {
   --wall: #e3d6bf;
 }
-:root[data-bg="mix"] .venue-panel {
+.venue-panel {
   border-radius: 6px;
   background:
     linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
@@ -1002,14 +835,14 @@ body {
     color-mix(in srgb, var(--tint) 24%, var(--paper));
   box-shadow: var(--paste-shadow);
 }
-:root[data-bg="mix"][data-theme="light"] .venue-panel {
+:root[data-theme="light"] .venue-panel {
   background:
     linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
     linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
     linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
     color-mix(in srgb, var(--tint) 20%, var(--paper));
 }
-:root[data-bg="mix"] .venue-panel::after {
+.venue-panel::after {
   content: "";
   top: -16px;
   left: -10px;
@@ -1022,7 +855,7 @@ body {
     radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
     var(--back-b);
 }
-:root[data-bg="mix"] .tint-blue::after {
+.tint-blue::after {
   top: auto;
   bottom: -16px;
   rotate: 1.8deg;
@@ -1031,55 +864,13 @@ body {
     var(--back-b);
 }
 @media (max-width: 640px) {
-  :root[data-bg="mix"] .venue-panel::after {
+  .venue-panel::after {
     top: -10px;
     left: -6px;
   }
-  :root[data-bg="mix"] .tint-blue::after {
+  .tint-blue::after {
     top: auto;
     bottom: -10px;
-  }
-}
-
-/* Dev-only switcher for the section frames. */
-.bg-switcher {
-  position: fixed;
-  left: 50%;
-  bottom: 14px;
-  translate: -50% 0;
-  z-index: 50;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  max-width: calc(100vw - 24px);
-  padding: 6px;
-  border-radius: 999px;
-  background: #1d1023;
-  color: #ffe4ef;
-  box-shadow: 4px 4px 0 0 var(--color-lime);
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-.bg-switcher span {
-  padding: 0 8px;
-  color: #ffd23f;
-}
-.bg-switcher button {
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-.bg-switcher button:hover {
-  background: rgba(255, 228, 239, 0.14);
-}
-.bg-switcher button[aria-pressed="true"] {
-  background: #ff6fb5;
-  color: #1d1023;
-}
-@media (max-width: 640px) {
-  .bg-switcher {
-    border-radius: 16px;
   }
 }
 
