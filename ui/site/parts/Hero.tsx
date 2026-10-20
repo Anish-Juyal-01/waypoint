@@ -1,27 +1,21 @@
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { Ear, Headphones, Monitor, Plug, Speaker, Unplug } from "lucide-react";
 import { Critter } from "../../src/pals/Critter";
+import { CRITTERS, type CritterName } from "../../src/pals/data";
 
 const BOARD = "WAYPOINT".split("");
 
-/** The hero's own tiny setlist, best first. */
-const DEVICES = [
-  { id: "headphones", name: "Headphones", icon: Headphones },
-  { id: "earbuds", name: "Earbuds", icon: Ear },
-  { id: "speakers", name: "Speakers", icon: Speaker },
-  { id: "monitor", name: "Monitor", icon: Monitor },
-] as const;
-type DeviceId = (typeof DEVICES)[number]["id"];
+/** The whole cast; in the app every profile gets one of these as its pal. */
+const CAST = Object.keys(CRITTERS) as CritterName[];
+const title = (n: CritterName) => n[0].toUpperCase() + n.slice(1);
 
 /**
- * The venue front: on the left a tiny working Waypoint (plug devices in and out; the best one plays), and on the
- * right a marquee sign that announces what's playing, over closed curtains with pals peeking through. The show
- * itself starts one screen further down, where the whole front falls onto the stage.
+ * The venue front: on the left the copy and a pal picker, and on the right a marquee sign that bills your pick, over
+ * closed curtains where that pal peeks through. The show itself starts one screen further down, where the whole front
+ * falls onto the stage.
  */
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
   // As the hero scrolls away, the venue front tips and falls (speeding up) down onto the gig's stage below, which
@@ -34,54 +28,26 @@ export function Hero() {
   const [falling, setFalling] = useState(false);
   useMotionValueEvent(fall, "change", (p) => setFalling(p > 0.06));
 
-  const [plugged, setPlugged] = useState<Set<DeviceId>>(() => new Set<DeviceId>(["speakers", "monitor"]));
-  const playing = DEVICES.find((d) => plugged.has(d.id)) ?? null;
+  const [star, setStar] = useState<CritterName>("fox");
+  const [hover, setHover] = useState<CritterName | null>(null);
   const [cheer, setCheer] = useState(false);
   const cheerTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(cheerTimer.current), []);
 
-  // The fox cheers for a moment whenever a new headliner takes over.
-  const first = useRef(true);
-  useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+  const pick = (n: CritterName) => {
+    setStar(n);
     setCheer(true);
     window.clearTimeout(cheerTimer.current);
-    cheerTimer.current = window.setTimeout(() => setCheer(false), 1600);
-    return () => window.clearTimeout(cheerTimer.current);
-  }, [playing?.id]);
-
-  const toggle = (id: DeviceId) =>
-    setPlugged((s) => {
-      const next = new Set(s);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
-  // A soft spotlight follows the pointer across the hero (written straight to CSS variables, no re-render).
-  const onPointerMove = (e: React.PointerEvent) => {
-    const el = panel.current;
-    if (!el || reduce) return;
-    const r = el.getBoundingClientRect();
-    el.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    el.style.setProperty("--my", `${e.clientY - r.top}px`);
-    el.style.setProperty("--glow", "1");
+    cheerTimer.current = window.setTimeout(() => setCheer(false), 1800);
   };
 
-  const face = falling ? "alarm" : cheer ? "cheer" : playing ? "idle" : "worried";
-  const announce = playing ? `Now playing: ${playing.name}` : "Doors closed";
+  const face = falling ? "alarm" : cheer ? "cheer" : "idle";
+  const band = falling ? "alarm" : cheer ? "cheer" : "idle";
+  const shown = hover ?? star;
 
   return (
     <section ref={ref} className="relative z-[4] px-4 pt-[80px] pb-7 md:px-8">
-      <div
-        ref={panel}
-        onPointerMove={onPointerMove}
-        onPointerLeave={() => panel.current?.style.setProperty("--glow", "0")}
-        className="venue-panel tint-lime hero-panel mx-auto grid min-h-[calc(100dvh-92px)] w-full max-w-[1320px] grid-cols-1 items-center gap-10 p-6 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-14"
-      >
-        <span className="hero-glow" aria-hidden />
+      <div className="venue-panel tint-lime mx-auto grid min-h-[calc(100dvh-92px)] w-full max-w-[1320px] grid-cols-1 items-center gap-10 p-6 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-14">
         <div className="relative z-[1]">
           <span className="stamp">
             <span className="on-air" aria-hidden />
@@ -95,34 +61,29 @@ export function Hero() {
           </p>
 
           <div className="mt-8">
-            <p className="mb-3 font-mono text-[12px] text-fg-3">Try it: plug things in and out. The highest one plays.</p>
-            <div className="flex flex-wrap gap-2.5" role="group" aria-label="Devices">
-              {DEVICES.map((d, i) => {
-                const Icon = d.icon;
-                const on = plugged.has(d.id);
-                const live = playing?.id === d.id;
-                return (
-                  <motion.button
-                    key={d.id}
-                    type="button"
-                    className="plug-chip"
-                    data-on={on}
-                    data-live={live}
-                    aria-pressed={on}
-                    aria-label={`${d.name}, rank ${i + 1}: ${on ? "plugged in" : "unplugged"}${live ? ", playing" : ""}`}
-                    onClick={() => toggle(d.id)}
-                    whileTap={{ scale: 0.94 }}
-                    layout
-                  >
-                    <span className="plug-rank">{i + 1}</span>
-                    <Icon size={17} strokeWidth={2.3} />
-                    <span>{d.name}</span>
-                    {on ? <Plug size={14} strokeWidth={2.5} className="plug-state" /> : <Unplug size={14} strokeWidth={2.5} className="plug-state" />}
-                    {live && <motion.span layoutId="hero-live" className="plug-live" transition={{ type: "spring", stiffness: 420, damping: 30 }} />}
-                  </motion.button>
-                );
-              })}
+            <p className="mb-3 font-mono text-[12px] text-fg-3">Every profile in Waypoint gets a pal. Pick tonight's star:</p>
+            <div className="pal-picker" role="radiogroup" aria-label="Tonight's star">
+              {CAST.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={star === n}
+                  aria-label={title(n)}
+                  className="pal-pick"
+                  onClick={() => pick(n)}
+                  onPointerEnter={() => setHover(n)}
+                  onPointerLeave={() => setHover(null)}
+                  onFocus={() => setHover(n)}
+                  onBlur={() => setHover(null)}
+                >
+                  <Critter name={n} clip={star === n || hover === n ? "cheer" : "idle"} scale={2} blink={false} />
+                </button>
+              ))}
             </div>
+            <p className="mt-3 min-h-[2.8em] max-w-[44ch] text-[0.95rem] leading-snug text-fg-3" aria-live="polite">
+              <span className="font-display font-bold text-fg">{title(shown)}.</span> {CRITTERS[shown].tag}
+            </p>
           </div>
         </div>
 
@@ -150,14 +111,14 @@ export function Hero() {
               <p className="lb-small lb-live" aria-live="polite">
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.span
-                    key={announce}
+                    key={star}
                     className="inline-block"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: [0, 1, 0.3, 1, 0.6, 1], y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.6 }}
                   >
-                    {announce}
+                    Starring {title(star)}
                   </motion.span>
                 </AnimatePresence>
               </p>
@@ -167,19 +128,21 @@ export function Hero() {
             <div className="curtain curtain-l" />
             <div className="curtain curtain-r" />
             <div className={`peek-split ${falling ? "is-falling" : ""}`}>
-              {falling ? (
-                <span className="amp-bubble">whoa whoa whoa</span>
-              ) : cheer && playing ? (
-                <span className="amp-bubble">{playing.name.toLowerCase()}!</span>
-              ) : !playing ? (
-                <span className="amp-bubble">hello?</span>
-              ) : null}
-              <Critter name="fox" clip={face} scale={4} />
+              {falling ? <span className="amp-bubble">whoa whoa whoa</span> : cheer ? <span className="amp-bubble">my turn!</span> : null}
+              <motion.span
+                key={star}
+                className="inline-block"
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                <Critter name={star} clip={face} scale={4} />
+              </motion.span>
             </div>
             <div className={`peek-hem ${falling ? "is-falling" : ""}`}>
-              <Critter name="beepo" clip={falling ? "alarm" : cheer ? "cheer" : "idle"} scale={4} />
-              <Critter name="bun" clip={falling ? "alarm" : cheer ? "cheer" : "idle"} scale={4} />
-              <Critter name="sprout" clip={falling ? "alarm" : cheer ? "cheer" : "idle"} scale={4} />
+              <Critter name="beepo" clip={band} scale={4} />
+              <Critter name="bun" clip={band} scale={4} />
+              <Critter name="sprout" clip={band} scale={4} />
             </div>
           </div>
         </motion.div>

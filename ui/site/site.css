@@ -1235,27 +1235,6 @@ body {
 }
 
 /* ── Hero toys ── */
-.hero-panel {
-  --mx: 50%;
-  --my: 40%;
-  --glow: 0;
-}
-/* A soft spotlight that follows the pointer (position set from React, no re-render). */
-.hero-glow {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: var(--glow);
-  transition: opacity 400ms var(--ease-snap);
-  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--color-sun) 30%, transparent), transparent 70%);
-  mix-blend-mode: var(--grain-blend);
-}
-:root[data-theme="light"] .hero-glow {
-  mix-blend-mode: normal;
-  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--color-sun) 34%, transparent), transparent 70%);
-}
 /* The word "headliner" gets a wobble and a highlighter swipe on hover. */
 .hero-word {
   display: inline-block;
@@ -1291,65 +1270,34 @@ body {
   animation: blink 1.1s ease-in-out infinite;
 }
 
-/* Plug-in chips: the hero's tiny setlist. */
-.plug-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
+/* Pal picker: the whole cast in a row of little round stalls. */
+.pal-picker {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  height: 44px;
-  padding: 0 14px 0 6px;
-  border-radius: 999px;
-  border: 2px solid var(--line-strong);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--color-fg-3);
-  isolation: isolate;
-  transition:
-    border-color 200ms,
-    color 200ms,
-    background-color 200ms;
 }
-.plug-chip:hover {
-  border-color: var(--color-fg-2);
-}
-.plug-chip[data-on="true"] {
-  color: var(--color-fg);
-  border-color: var(--riso-line);
-  background: color-mix(in srgb, var(--color-fg) 6%, transparent);
-}
-:root:not([data-theme="light"]) .plug-chip[data-on="true"] {
-  border-color: color-mix(in srgb, var(--color-fg) 60%, transparent);
-}
-.plug-chip[data-live="true"] {
-  color: var(--color-on-accent);
-  border-color: var(--riso-line);
-}
-.plug-rank {
+.pal-pick {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  font-size: 13px;
-  background: color-mix(in srgb, var(--color-fg) 10%, transparent);
+  border: 2px solid var(--line-strong);
+  transition:
+    transform 300ms var(--ease-spring),
+    border-color 200ms,
+    background-color 200ms,
+    box-shadow 200ms;
 }
-.plug-chip[data-live="true"] .plug-rank {
-  background: var(--color-on-accent);
-  color: var(--color-lime);
+.pal-pick:hover {
+  transform: translateY(-4px) rotate(-6deg);
+  border-color: var(--color-fg-2);
 }
-.plug-state {
-  opacity: 0.7;
-}
-/* The pink "playing" fill slides from chip to chip. */
-.plug-live {
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  border-radius: inherit;
+.pal-pick[aria-checked="true"] {
   background: var(--color-lime);
+  border-color: var(--riso-line);
   box-shadow: 3px 3px 0 0 var(--ink-2);
+  transform: translateY(-2px);
 }
 .lb-live {
   min-height: 1.3em;
