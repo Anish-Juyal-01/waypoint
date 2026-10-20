@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark" data-bg="riso">
+<html lang="en" data-theme="dark" data-bg="sleeve">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,8 +17,8 @@
         document.documentElement.dataset.theme = t;
         // Section frame style; the dev server can switch it, the built site always uses the default.
         var f = null;
-        if (location.port) try { f = localStorage.getItem("waypoint-site-frame"); } catch (e) {}
-        document.documentElement.dataset.bg = f || "riso";
+        if (location.port) try { f = localStorage.getItem("waypoint-site-frame-v2"); } catch (e) {}
+        document.documentElement.dataset.bg = f || "sleeve";
       })();
     </script>
   </head>

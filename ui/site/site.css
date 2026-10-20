@@ -892,6 +892,75 @@ body {
     var(--back-b);
 }
 
+/* Record sleeve: each section is an album sleeve printed in its own ink, with a faint ring-wear mark, and a vinyl
+   record peeking out from behind its right edge, slowly spinning. The record sits on ::before at z -1, so it's
+   behind the sleeve but never clips anything inside it. */
+:root[data-bg="sleeve"] .venue-panel {
+  border-radius: 6px;
+  background:
+    /* ring wear: the outline of the record pressing through the card */
+    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
+    /* a darker strip down the spine */
+    linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 18px),
+    color-mix(in srgb, var(--tint) 24%, var(--paper));
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.25),
+    0 18px 34px -22px rgba(0, 0, 0, 0.75);
+}
+:root[data-bg="sleeve"][data-theme="light"] .venue-panel {
+  background:
+    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
+    linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
+    color-mix(in srgb, var(--tint) 20%, var(--paper));
+  box-shadow:
+    0 1px 0 rgba(31, 42, 120, 0.15),
+    0 18px 34px -22px rgba(31, 42, 120, 0.5);
+}
+:root[data-bg="sleeve"] .venue-panel::before {
+  content: "";
+  top: 50%;
+  right: 0;
+  height: min(64%, 470px);
+  aspect-ratio: 1;
+  /* slid about 40% of the way out of the sleeve, so the label shows */
+  translate: 40% -50%;
+  border-radius: 50%;
+  background:
+    /* a soft sheen so the spin shows */
+    conic-gradient(from 20deg, transparent 0 8%, rgba(255, 255, 255, 0.1) 12%, transparent 17% 52%, rgba(255, 255, 255, 0.07) 57%, transparent 62%),
+    /* spindle hole, a printed dot on the label (so the spin shows), the label and its run-out ring */
+    radial-gradient(circle, #0d080f 0 2.2%, transparent 2.4%),
+    radial-gradient(circle at 57% 43%, #fdf9f1 0 1.3%, transparent 1.5%),
+    radial-gradient(circle, var(--back-a) 0 16.5%, #1a141d 16.6% 17.6%, transparent 17.7%),
+    /* a lighter rim so it reads against the wall, then the grooves */
+    radial-gradient(circle, transparent 0 67.5%, #4a3f50 67.6% 70.5%, transparent 70.6%),
+    repeating-radial-gradient(circle, #151017 0 1.2px, #2a222e 1.2px 3px);
+  -webkit-mask: radial-gradient(circle, #000 0 70.5%, transparent 71%);
+  mask: radial-gradient(circle, #000 0 70.5%, transparent 71%);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  animation: vinyl 7s linear infinite;
+}
+/* Leave room on the right of every sleeve for its record to slide out. */
+:root[data-bg="sleeve"] main > section {
+  padding-right: clamp(64px, 14vw, 210px);
+}
+@keyframes vinyl {
+  to {
+    rotate: 360deg;
+  }
+}
+@media (max-width: 640px) {
+  :root[data-bg="sleeve"] .venue-panel::before {
+    height: min(44%, 240px);
+    translate: 30% -50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-bg="sleeve"] .venue-panel::before {
+    animation: none;
+  }
+}
+
 /* Dev-only switcher for the section frames. */
 .bg-switcher {
   position: fixed;
@@ -1404,5 +1473,14 @@ a:hover > .wordmark-m .wmm-letter,
   .wmm-drop,
   .wmm-letter {
     animation: none;
+  }
+}
+@media (max-width: 640px) {
+  /* Room for theme, GitHub and Download beside the wordmark on a phone. */
+  .masthead .wordmark-m {
+    font-size: 19px !important;
+  }
+  .masthead nav {
+    gap: 6px;
   }
 }

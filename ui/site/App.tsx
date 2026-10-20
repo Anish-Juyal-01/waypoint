@@ -50,6 +50,7 @@ function useTheme() {
 
 /** How sections are framed (see site.css). The switcher is for picking one; it only exists on the dev server. */
 const FRAMES = [
+  { id: "sleeve", label: "Record sleeve" },
   { id: "riso", label: "Riso card" },
   { id: "misprint", label: "Misprint" },
   { id: "roadcase", label: "Road case" },
@@ -58,8 +59,8 @@ const FRAMES = [
   { id: "torn", label: "Torn paper" },
   { id: "poster", label: "Poster" },
 ] as const;
-const DEFAULT_FRAME = "riso";
-const FRAME_KEY = "waypoint-site-frame";
+const DEFAULT_FRAME = "sleeve";
+const FRAME_KEY = "waypoint-site-frame-v2";
 
 function FrameSwitcher() {
   const [frame, setFrame] = useState<string>(() => document.documentElement.dataset.bg ?? DEFAULT_FRAME);
