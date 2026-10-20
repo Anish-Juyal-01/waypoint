@@ -946,6 +946,33 @@ body {
     rotate: 360deg;
   }
 }
+/* Scroll slides the record out: tucked in the sleeve as the section arrives, out by the time it's in view, rolling
+   further out as it leaves. Spinning (time) and sliding (scroll) use separate properties, so they combine. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel {
+      view-timeline-name: --sleeve;
+    }
+    :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
+      animation:
+        vinyl 7s linear infinite,
+        vinyl-slide linear both;
+      animation-timeline: auto, --sleeve;
+      animation-range: normal, cover 0% cover 100%;
+    }
+  }
+}
+@keyframes vinyl-slide {
+  0% {
+    translate: -12% -50%;
+  }
+  40% {
+    translate: 40% -50%;
+  }
+  100% {
+    translate: 85% -50%;
+  }
+}
 @media (max-width: 640px) {
   :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
     height: min(44%, 240px);
