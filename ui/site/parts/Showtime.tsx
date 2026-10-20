@@ -155,7 +155,7 @@ export function Showtime() {
   const blurb = MODES.find((m) => m.value === mode)!.blurb;
 
   return (
-    <section id="run-the-show" className="relative z-[1] px-3 py-3 md:px-6">
+    <section id="run-the-show" className="relative z-[1] px-4 py-7 md:px-8">
       <div className="venue-panel tint-sun mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-x-12 gap-y-7 p-5 md:p-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-rows-[auto_1fr] lg:p-12">
         <div className="lg:col-start-1 lg:row-start-1">
           <h2 className="headline text-[clamp(2.2rem,4.6vw,3.6rem)]">Run the show.</h2>

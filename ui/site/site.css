@@ -46,7 +46,7 @@ button {
   gap: 12px;
   height: 64px;
   padding: 0 clamp(16px, 3vw, 32px);
-  background: color-mix(in srgb, var(--color-ink-900) 82%, transparent);
+  background: color-mix(in srgb, var(--wall) 86%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -670,55 +670,127 @@ button {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Venue panels: every section sits inside a printed panel (a tint
-   of one ink) with a halftone disc and an ink disc overprinting in
-   one corner, so nothing floats loose on the page.
+   Poster wall: the page is a wall and every section is a gig
+   poster pasted onto it, taped at the top, with two older posters
+   (other inks) peeking out from behind. Each tint arranges its
+   backing posters differently so the wall doesn't repeat.
    ══════════════════════════════════════════════════════════════ */
+body {
+  background: var(--wall);
+}
+:root {
+  --wall: #160b1b;
+  --paper: #29172f;
+  --tape: rgba(255, 228, 239, 0.3);
+  --paste-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.7);
+}
+:root[data-theme="light"] {
+  --wall: #e3d6bf;
+  --paper: #fdf9f1;
+  --tape: rgba(255, 210, 63, 0.7);
+  --paste-shadow: 0 2px 0 rgba(31, 42, 120, 0.12), 0 14px 30px -18px rgba(31, 42, 120, 0.45);
+}
 .venue-panel {
   --tint: var(--color-lime);
+  --back-a: var(--color-violet);
+  --back-b: var(--color-sun);
   position: relative;
-  isolation: isolate;
-  border-radius: 30px;
-  background: color-mix(in srgb, var(--tint) 11%, var(--color-ink-900));
+  border-radius: 6px;
+  background:
+    /* two strips of tape across the top corners */
+    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
+    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
+    /* a light wash of the poster's own ink over the paper */
+    linear-gradient(color-mix(in srgb, var(--tint) 12%, transparent), color-mix(in srgb, var(--tint) 12%, transparent)),
+    var(--paper);
+  box-shadow: var(--paste-shadow);
 }
-/* The corner discs are drawn inside the panel's own box (no overflow clipping), so a falling stage can pass over
-   the panel's edges. */
+/* The older posters underneath (z -1 puts them behind this poster, inside the section). */
 .venue-panel::before,
 .venue-panel::after {
   content: "";
   position: absolute;
-  inset: 0;
   z-index: -1;
-  border-radius: inherit;
+  border-radius: 4px;
   pointer-events: none;
+  box-shadow: var(--paste-shadow);
 }
-/* Halftone disc, top right. */
+/* Halftone poster, sticking out at the top left. */
 .venue-panel::before {
-  background: radial-gradient(color-mix(in srgb, var(--tint) 55%, transparent) 2.4px, transparent 2.9px) 0 0 / 9px 9px;
-  -webkit-mask: radial-gradient(circle at 100% 0, #000 0 120px, transparent 240px);
-  mask: radial-gradient(circle at 100% 0, #000 0 120px, transparent 240px);
+  top: -16px;
+  left: -10px;
+  width: 46%;
+  height: 58%;
+  rotate: -2.4deg;
+  background:
+    radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
+    var(--back-a);
 }
-/* Solid ink disc, bottom left, misregistered against the dots. */
+/* Striped poster, sticking out at the bottom right. */
 .venue-panel::after {
-  background: radial-gradient(circle at 0 100%, color-mix(in srgb, var(--tint) 22%, transparent) 0 150px, transparent 151px);
+  right: -12px;
+  bottom: -16px;
+  width: 38%;
+  height: 52%;
+  rotate: 1.9deg;
+  background:
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-line) 18%, transparent) 0 6px, transparent 6px 16px),
+    var(--back-b);
 }
 .tint-lime {
   --tint: var(--color-lime);
+  --back-a: var(--color-violet);
+  --back-b: var(--color-sun);
 }
 .tint-blue {
   --tint: var(--color-violet);
+  --back-a: var(--color-lime);
+  --back-b: var(--color-coral);
+}
+.tint-blue::before {
+  left: auto;
+  right: -12px;
+  rotate: 2.2deg;
+}
+.tint-blue::after {
+  right: auto;
+  left: -14px;
+  rotate: -1.6deg;
 }
 .tint-sun {
   --tint: var(--color-sun);
+  --back-a: var(--color-coral);
+  --back-b: var(--color-violet);
+}
+.tint-sun::before {
+  top: 30%;
+  left: -14px;
+  height: 46%;
+  rotate: -3deg;
 }
 .tint-coral {
   --tint: var(--color-coral);
+  --back-a: var(--color-sky);
+  --back-b: var(--color-lime);
 }
-:root[data-theme="light"] .venue-panel {
-  background: color-mix(in srgb, var(--tint) 13%, var(--color-ink-800));
-}
-.tint-blue::after {
-  background: radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--tint) 22%, transparent) 0 150px, transparent 151px);
+@media (max-width: 640px) {
+  .venue-panel::before {
+    top: -10px;
+    left: -6px;
+  }
+  .venue-panel::after {
+    right: -6px;
+    bottom: -10px;
+  }
+  .tint-blue::before {
+    right: -6px;
+  }
+  .tint-blue::after {
+    left: -6px;
+  }
+  .tint-sun::before {
+    left: -6px;
+  }
 }
 
 /* ── Hero: the marquee sign ── */

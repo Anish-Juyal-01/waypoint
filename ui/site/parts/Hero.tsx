@@ -25,7 +25,7 @@ export function Hero() {
   const face = falling ? "alarm" : "idle";
 
   return (
-    <section ref={ref} className="relative z-[4] px-3 pt-[76px] pb-3 md:px-6">
+    <section ref={ref} className="relative z-[4] px-4 pt-[80px] pb-7 md:px-8">
       <div className="venue-panel tint-lime mx-auto grid min-h-[calc(100dvh-92px)] w-full max-w-[1320px] grid-cols-1 items-center gap-10 p-6 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-14">
         <div className="relative z-[1]">
           <span className="stamp">Now playing on Windows</span>

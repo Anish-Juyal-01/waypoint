@@ -96,8 +96,8 @@ export function Gig() {
 
   const b = BEATS[beat];
   return (
-    <section ref={ref} className="relative z-[3] overflow-x-clip px-3 md:px-6" style={{ height: `${UNITS * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
-      <div className="sticky top-[76px] flex h-[calc(100dvh-88px)] items-stretch">
+    <section ref={ref} className="relative z-[3] overflow-x-clip px-4 md:px-8" style={{ height: `${UNITS * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
+      <div className="sticky top-[84px] flex h-[calc(100dvh-108px)] items-stretch">
         <div className="venue-panel tint-blue mx-auto grid w-full max-w-[1320px] grid-cols-1 content-center items-center gap-5 p-4 md:p-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-10 lg:p-10">
           <div className="relative z-[1] order-2 min-h-[190px] lg:order-1 lg:min-h-[480px]">
             <AnimatePresence mode="wait" initial={false}>
