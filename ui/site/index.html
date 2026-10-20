@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waypoint: only the headliner plays</title>
+    <meta name="description" content="Waypoint ranks your headphones, earbuds and speakers, so Windows always plays on the best one that's connected. Free and open source." />
+    <meta property="og:title" content="Waypoint: only the headliner plays" />
+    <meta property="og:description" content="Rank your audio devices once. Windows always plays on the best one that's connected." />
+    <link rel="icon" type="image/png" href="./icon.png" />
+    <script>
+      // Pick the theme before first paint so there's no flash.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("waypoint-site-theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

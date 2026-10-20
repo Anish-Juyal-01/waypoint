@@ -8,3 +8,4 @@ ui/dist/
 artifacts/
 *.tsbuildinfo
 .claude/
+ui/dist-site/

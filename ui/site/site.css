@@ -1,0 +1,701 @@
+@import "../src/styles/index.css";
+@source "./";
+@source "../src";
+
+/* ══════════════════════════════════════════════════════════════
+   Waypoint website. Builds on the app's riso tokens and pieces
+   (headline, wordmark, set-num, hl, coin, grain); everything
+   here is page-only: a scrolling document instead of a window.
+   ══════════════════════════════════════════════════════════════ */
+
+html,
+body,
+#root {
+  height: auto;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  overflow-x: clip;
+  overflow-y: auto;
+  user-select: text;
+  cursor: auto;
+  font-size: 16px;
+}
+a,
+button {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Masthead ── */
+.masthead {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 64px;
+  padding: 0 clamp(16px, 3vw, 32px);
+  background: color-mix(in srgb, var(--color-ink-900) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.masthead .wordmark {
+  font-size: 28px;
+}
+
+/* ── Buttons: ink slab with a misregistered blue plate behind it ── */
+.btn-ink,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15.5px;
+  white-space: nowrap;
+  transition:
+    transform 220ms var(--ease-spring),
+    box-shadow 220ms var(--ease-snap),
+    background-color 200ms var(--ease-snap);
+}
+.btn-ink {
+  background: var(--color-lime);
+  color: var(--color-on-accent);
+  border: 2px solid var(--riso-line);
+  box-shadow: 4px 4px 0 0 var(--ink-2);
+}
+.btn-ink:hover {
+  transform: translate(-1px, -2px) rotate(-1deg);
+  box-shadow: 6px 6px 0 0 var(--ink-2);
+}
+.btn-ink:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 var(--ink-2);
+}
+.btn-sm {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  box-shadow: 3px 3px 0 0 var(--ink-2);
+}
+.btn-ghost {
+  border: 2px solid var(--line-strong);
+  color: var(--color-fg);
+}
+.btn-ghost:hover {
+  border-color: var(--color-fg);
+  transform: translateY(-2px);
+}
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: var(--color-fg-2);
+  transition:
+    background-color 160ms,
+    color 160ms,
+    transform 220ms var(--ease-spring);
+}
+.icon-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-fg) 10%, transparent);
+  color: var(--color-fg);
+}
+.icon-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.icon-btn-lg {
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--line-strong);
+}
+.icon-btn-lg:hover {
+  transform: rotate(-14deg);
+}
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--color-lime) 70%, transparent);
+}
+.link:hover {
+  color: var(--color-fg);
+  text-decoration-color: var(--color-lime);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   The stage. Always a night scene (deep plum in dark mode, a
+   federal-blue plate in light mode), so the pals are re-inked with
+   the dark-paper inks here whatever the page theme is.
+   ══════════════════════════════════════════════════════════════ */
+.stage {
+  --stage-bg: #150a1a;
+  --stage-wall: #221328;
+  --stage-floor: #2d1934;
+  --riso-line: #120814;
+  --riso-paper: #ffe4ef;
+  --riso-light: #ffd23f;
+  --riso-mid: #ff6fb5;
+  --riso-deep: #7aa6ff;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  aspect-ratio: 16 / 10.5;
+  border-radius: 22px;
+  background: var(--stage-bg);
+  color: #ffe4ef;
+}
+:root[data-theme="light"] .stage {
+  --stage-bg: #1f2a78;
+  --stage-wall: #26338a;
+  --stage-floor: #18215f;
+  box-shadow: 6px 6px 0 0 var(--color-lime);
+}
+.stage-compact {
+  aspect-ratio: 16 / 9.5;
+}
+@media (max-width: 640px) {
+  .stage {
+    aspect-ratio: 4 / 3.4;
+    border-radius: 16px;
+  }
+  .stage-compact {
+    aspect-ratio: 4 / 3.1;
+  }
+}
+.stage-wall {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, color-mix(in srgb, var(--color-lime) 16%, transparent), transparent 70%),
+    radial-gradient(rgba(255, 111, 181, 0.18) 1.2px, transparent 1.6px) 0 0 / 14px 14px,
+    var(--stage-wall);
+}
+.stage-floor {
+  position: absolute;
+  inset: auto 0 0;
+  height: 25%;
+  background:
+    radial-gradient(rgba(255, 210, 63, 0.16) 1.4px, transparent 1.8px) 0 0 / 10px 10px,
+    var(--stage-floor);
+  border-top: 3px solid color-mix(in srgb, var(--color-sun) 55%, transparent);
+  z-index: 1;
+}
+.stage-truss {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 14px;
+  background: repeating-linear-gradient(90deg, rgba(255, 228, 239, 0.35) 0 2px, transparent 2px 14px) top / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 228, 239, 0.35) 0 2px, transparent 2px 14px) bottom / 100% 2px no-repeat,
+    repeating-linear-gradient(45deg, rgba(255, 228, 239, 0.22) 0 1.5px, transparent 1.5px 10px);
+}
+.stage-lamp {
+  position: absolute;
+  left: 50%;
+  width: 34px;
+  height: 22px;
+  translate: -50% -60%;
+  border-radius: 6px 6px 14px 14px;
+  background: #ffe4ef;
+  box-shadow:
+    inset 0 -6px 0 0 var(--color-sun),
+    3px 3px 0 0 var(--color-lime);
+  z-index: 3;
+}
+/* The beam: a soft cone that grows down from the lamp. Its height and angle are animated from React. */
+.stage-beam {
+  position: absolute;
+  left: 50%;
+  width: 34%;
+  translate: -50% 0;
+  transform-origin: 50% 0;
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, rgba(255, 210, 63, 0.75), rgba(255, 210, 63, 0.22) 70%, rgba(255, 210, 63, 0.38));
+  mix-blend-mode: screen;
+  z-index: 1;
+  pointer-events: none;
+}
+.stage-compact .stage-beam {
+  width: 30%;
+}
+.stage-pool {
+  position: absolute;
+  bottom: 9%;
+  width: 26%;
+  height: 12%;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 210, 63, 0.7), rgba(255, 210, 63, 0.15) 70%, transparent);
+  mix-blend-mode: screen;
+  z-index: 1;
+  pointer-events: none;
+}
+.stage-beam {
+  z-index: 0;
+}
+.stage-wall {
+  z-index: -1;
+}
+
+/* ── Amps ── */
+.amp-slot {
+  position: absolute;
+  z-index: 2;
+  translate: -50% 0;
+}
+.amp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.amp-pal {
+  margin-bottom: -4px;
+  transition: translate 300ms var(--ease-spring);
+}
+.amp[data-state="lit"] .amp-pal {
+  translate: 0 -4px;
+}
+@media (max-width: 640px) {
+  .amp-pal {
+    zoom: 0.75;
+  }
+  .amp-bubble {
+    font-size: 9px;
+  }
+}
+.amp-box {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(54px, 9vw, 104px);
+  aspect-ratio: 1 / 1.05;
+  border-radius: 9px;
+  background: var(--amp-ink);
+  border: 2.5px solid var(--riso-line);
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.35);
+  transition:
+    filter 300ms,
+    box-shadow 300ms;
+}
+.stage-compact .amp-box {
+  width: clamp(48px, 7vw, 84px);
+}
+.amp[data-state="idle"] .amp-box,
+.amp[data-state="ignored"] .amp-box {
+  filter: saturate(0.45) brightness(0.62);
+}
+.amp[data-state="lit"] .amp-box {
+  box-shadow:
+    4px 4px 0 0 rgba(0, 0, 0, 0.35),
+    0 0 0 3px rgba(255, 210, 63, 0.55);
+}
+.amp-grille {
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2.5px solid var(--riso-line);
+  background: radial-gradient(var(--riso-line) 1.3px, transparent 1.7px) 0 0 / 6px 6px;
+  opacity: 0.85;
+}
+.amp[data-state="lit"] .amp-grille {
+  animation: thump 0.53s ease-in-out infinite;
+}
+@keyframes thump {
+  50% {
+    scale: 1.07;
+  }
+}
+.amp-rank {
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(12px, 1.3vw, 16px);
+  line-height: 1;
+  color: var(--riso-line);
+}
+.amp-tape {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  translate: -50% 0;
+  rotate: -3deg;
+  padding: 2px 6px;
+  background: #fff6d6;
+  color: #120814;
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 0.85vw, 10.5px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+.amp-eq {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 22%;
+}
+.amp-eq i {
+  width: 3px;
+  height: 100%;
+  background: var(--riso-line);
+  transform-origin: bottom;
+  animation: eq 0.6s ease-in-out infinite alternate;
+}
+.amp-eq i:nth-child(2) {
+  animation-delay: -0.25s;
+  animation-duration: 0.45s;
+}
+.amp-eq i:nth-child(3) {
+  animation-delay: -0.4s;
+  animation-duration: 0.7s;
+}
+.amp-eq i:nth-child(4) {
+  animation-delay: -0.1s;
+  animation-duration: 0.5s;
+}
+.amp-eq i:nth-child(5) {
+  animation-delay: -0.33s;
+  animation-duration: 0.65s;
+}
+@keyframes eq {
+  from {
+    scale: 1 0.25;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+.amp-bubble {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 3px 9px;
+  border-radius: 10px 10px 10px 2px;
+  background: #ffe4ef;
+  color: #120814;
+  font-family: var(--font-mono);
+  font-size: clamp(9.5px, 0.95vw, 12px);
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 0 var(--color-lime);
+  z-index: 4;
+}
+
+.gig-rail {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.gig-rail > span {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: var(--color-lime);
+  border-radius: inherit;
+}
+
+/* ── Setlist taped to the floor ── */
+.setlist {
+  padding: 14px 18px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-ink-800) 92%, transparent);
+  rotate: -1.2deg;
+  box-shadow: 4px 4px 0 0 color-mix(in srgb, var(--ink-2) 40%, transparent);
+  max-width: 460px;
+}
+.setlist-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+  border-top: 2px dotted var(--line-strong);
+  transition: opacity 300ms;
+}
+.setlist-row:first-child {
+  border-top: 0;
+}
+.setlist-row[data-status="not here"] {
+  opacity: 0.4;
+}
+.setlist-row[data-status="left"] {
+  opacity: 0.7;
+}
+.setlist-strike {
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 52%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-tx-lime);
+  transform-origin: left;
+  rotate: -2deg;
+}
+
+/* ── Paper sheet for the running-order game ── */
+.paper-sheet {
+  position: relative;
+  padding: 16px 16px 10px;
+  border-radius: 8px;
+  background: var(--color-ink-800);
+  box-shadow: 5px 5px 0 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
+}
+.tape {
+  position: absolute;
+  top: -11px;
+  width: 74px;
+  height: 22px;
+  background: color-mix(in srgb, var(--color-sun) 60%, transparent);
+  opacity: 0.85;
+}
+.tape-left {
+  left: 18px;
+  rotate: -5deg;
+}
+.tape-right {
+  right: 18px;
+  rotate: 4deg;
+}
+.order-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-top: 2px dotted var(--line-strong);
+  background: var(--color-ink-800);
+  list-style: none;
+}
+.order-row:first-child {
+  border-top-color: transparent;
+}
+.order-row[data-plugged="false"] > span {
+  opacity: 0.45;
+}
+.order-grip {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 36px;
+  color: var(--color-fg-3);
+  cursor: grab;
+  touch-action: none;
+}
+.order-grip:active {
+  cursor: grabbing;
+}
+.plug-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  min-width: 64px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 2px solid var(--riso-line);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition:
+    background-color 200ms,
+    transform 220ms var(--ease-spring);
+}
+.plug-btn[aria-pressed="true"] {
+  background: var(--color-mint);
+  color: var(--color-on-accent);
+}
+.plug-btn[aria-pressed="false"] {
+  background: transparent;
+  color: var(--color-fg-3);
+  border-color: var(--line-strong);
+}
+.plug-btn:active {
+  transform: scale(0.94);
+}
+
+/* ── Gig poster ── */
+.poster {
+  position: relative;
+  padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 56px);
+  border-radius: 10px;
+  background:
+    radial-gradient(color-mix(in srgb, var(--color-lime) 22%, transparent) 1.4px, transparent 1.8px) 0 0 / 12px 12px,
+    var(--color-ink-800);
+  box-shadow: 7px 7px 0 0 color-mix(in srgb, var(--ink-2) 50%, transparent);
+}
+.poster-kicker {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-tx-lime);
+}
+.poster-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--color-fg);
+  text-shadow: 0.045em 0.045em 0 var(--shift-ink);
+}
+.poster-name.is-ink {
+  color: var(--color-tx-lime);
+  text-shadow: 0.045em 0.045em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
+}
+
+/* ── Ticket ── */
+.ticket {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: min(100%, 760px);
+  filter: drop-shadow(6px 6px 0 color-mix(in srgb, var(--ink-2) 55%, transparent));
+}
+.ticket-main,
+.ticket-stub {
+  position: relative;
+  background: var(--color-sun);
+  color: #1d1023;
+  --notch: radial-gradient(circle at 0 50%, transparent 13px, #000 13.5px);
+}
+.ticket-main {
+  padding: clamp(20px, 3.4vw, 34px);
+  border-radius: 14px 0 0 14px;
+  -webkit-mask: radial-gradient(circle at 100% 50%, transparent 13px, #000 13.5px);
+  mask: radial-gradient(circle at 100% 50%, transparent 13px, #000 13.5px);
+  overflow: hidden;
+}
+.ticket-main .wordmark {
+  font-size: clamp(30px, 4.4vw, 44px);
+}
+.ticket-main .wm-letter,
+.ticket-main .wm-drop:nth-child(odd) .wm-letter {
+  color: #1d1023;
+  text-shadow: 0.06em 0.05em 0 rgba(255, 79, 154, 0.6);
+}
+.ticket-dots {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(rgba(255, 79, 154, 0.55) 2.4px, transparent 2.8px) 0 0 / 8px 8px;
+  pointer-events: none;
+}
+.ticket-facts {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: 4px 28px;
+}
+.ticket-facts dt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+.ticket-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+.ticket-stub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 168px;
+  padding: 20px 24px;
+  border-radius: 0 14px 14px 0;
+  background: var(--color-lime);
+  border-left: 3px dashed rgba(29, 16, 35, 0.55);
+  -webkit-mask: radial-gradient(circle at 0 50%, transparent 13px, #000 13.5px);
+  mask: radial-gradient(circle at 0 50%, transparent 13px, #000 13.5px);
+  transform-origin: 0% 100%;
+}
+.ticket-admit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.ticket-exe {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+}
+.ticket-cta {
+  margin-top: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #1d1023;
+  color: #ffe4ef;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+@media (max-width: 640px) {
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+  .ticket-main {
+    border-radius: 14px 14px 0 0;
+    -webkit-mask: radial-gradient(circle at 50% 100%, transparent 13px, #000 13.5px);
+    mask: radial-gradient(circle at 50% 100%, transparent 13px, #000 13.5px);
+  }
+  .ticket-stub {
+    border-radius: 0 0 14px 14px;
+    border-left: 0;
+    border-top: 3px dashed rgba(29, 16, 35, 0.55);
+    -webkit-mask: radial-gradient(circle at 50% 0, transparent 13px, #000 13.5px);
+    mask: radial-gradient(circle at 50% 0, transparent 13px, #000 13.5px);
+    transform-origin: 0% 0%;
+  }
+  .ticket-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .amp-eq i,
+  .amp[data-state="lit"] .amp-grille {
+    animation: none;
+  }
+}
