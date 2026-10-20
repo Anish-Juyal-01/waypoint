@@ -916,7 +916,7 @@ body {
     0 1px 0 rgba(31, 42, 120, 0.15),
     0 18px 34px -22px rgba(31, 42, 120, 0.5);
 }
-:root[data-bg="sleeve"] .venue-panel::before {
+:root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
   content: "";
   top: 50%;
   right: 0;
@@ -941,7 +941,7 @@ body {
   animation: vinyl 7s linear infinite;
 }
 /* Leave room on the right of every sleeve for its record to slide out. */
-:root[data-bg="sleeve"] main > section {
+:root:is([data-bg="sleeve"], [data-bg="mix"]) main > section {
   padding-right: clamp(64px, 14vw, 210px);
 }
 @keyframes vinyl {
@@ -950,14 +950,72 @@ body {
   }
 }
 @media (max-width: 640px) {
-  :root[data-bg="sleeve"] .venue-panel::before {
+  :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
     height: min(44%, 240px);
     translate: 30% -50%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-bg="sleeve"] .venue-panel::before {
+  :root:is([data-bg="sleeve"], [data-bg="mix"]) .venue-panel::before {
     animation: none;
+  }
+}
+
+/* Poster + sleeve: sleeves pasted up on the poster wall. Tape across the top corners, an older halftone poster
+   peeking out behind the top left (on ::after), and the record sliding out of the right edge (shared ::before). */
+:root[data-bg="mix"] {
+  --wall: #160b1b;
+}
+:root[data-bg="mix"][data-theme="light"] {
+  --wall: #e3d6bf;
+}
+:root[data-bg="mix"] .venue-panel {
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
+    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
+    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 18px),
+    color-mix(in srgb, var(--tint) 24%, var(--paper));
+  box-shadow: var(--paste-shadow);
+}
+:root[data-bg="mix"][data-theme="light"] .venue-panel {
+  background:
+    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
+    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
+    radial-gradient(circle at 74% 50%, transparent 0 min(30vw, 300px), color-mix(in srgb, var(--color-fg) 7%, transparent) calc(min(30vw, 300px) + 1px) calc(min(30vw, 300px) + 5px), transparent calc(min(30vw, 300px) + 6px)),
+    linear-gradient(90deg, rgba(31, 42, 120, 0.1), transparent 18px),
+    color-mix(in srgb, var(--tint) 20%, var(--paper));
+}
+:root[data-bg="mix"] .venue-panel::after {
+  content: "";
+  top: -16px;
+  left: -10px;
+  width: 42%;
+  height: 54%;
+  rotate: -2.4deg;
+  border-radius: 4px;
+  box-shadow: var(--paste-shadow);
+  background:
+    radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
+    var(--back-b);
+}
+:root[data-bg="mix"] .tint-blue::after {
+  top: auto;
+  bottom: -16px;
+  rotate: 1.8deg;
+  background:
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-line) 18%, transparent) 0 6px, transparent 6px 16px),
+    var(--back-b);
+}
+@media (max-width: 640px) {
+  :root[data-bg="mix"] .venue-panel::after {
+    top: -10px;
+    left: -6px;
+  }
+  :root[data-bg="mix"] .tint-blue::after {
+    top: auto;
+    bottom: -10px;
   }
 }
 
