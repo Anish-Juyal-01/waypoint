@@ -9,6 +9,44 @@ const BOARD = "WAYPOINT".split("");
 const CAST = Object.keys(CRITTERS) as CritterName[];
 const title = (n: CritterName) => n[0].toUpperCase() + n.slice(1);
 
+/** The headline's last word rolls through these. */
+const DEVICE_WORDS = ["headphones", "earbuds", "speakers", "headset"];
+
+/**
+ * "Your sound follows your [headphones.]": the device word rolls up and out every couple of seconds, each one
+ * printed in the next ink. Holds still on the first word with reduced motion.
+ */
+function RollingHeadline() {
+  const reduce = useReducedMotion();
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (reduce) return;
+    const id = window.setInterval(() => setI((n) => (n + 1) % DEVICE_WORDS.length), 2200);
+    return () => window.clearInterval(id);
+  }, [reduce]);
+  const word = DEVICE_WORDS[i];
+  return (
+    <h1 className="headline mt-6 text-[clamp(2.6rem,6vw,5rem)]" aria-label="Your sound follows your headphones, earbuds, speakers or headset.">
+      <span aria-hidden>Your sound follows your</span>
+      <span className="roll-slot" aria-hidden>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={word}
+            className="roll-word"
+            data-ink={i % 3}
+            initial={{ y: "90%", opacity: 0, rotate: 4 }}
+            animate={{ y: 0, opacity: 1, rotate: 0 }}
+            exit={{ y: "-90%", opacity: 0, rotate: -4 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          >
+            {word}.
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </h1>
+  );
+}
+
 /**
  * The venue front: on the left the copy and a pal picker, and on the right a marquee sign that bills your pick, over
  * closed curtains where that pal peeks through. The show itself starts one screen further down, where the whole front
@@ -53,9 +91,7 @@ export function Hero() {
             <span className="on-air" aria-hidden />
             Now playing on Windows
           </span>
-          <h1 className="headline mt-6 text-[clamp(2.6rem,6vw,5rem)]">
-            Only the <span className="hero-word">headliner</span> plays.
-          </h1>
+          <RollingHeadline />
           <p className="mt-5 max-w-[42ch] text-[clamp(1rem,1.4vw,1.18rem)] leading-relaxed text-fg-2">
             Waypoint ranks your headphones, earbuds and speakers. Windows always plays on the best one that's connected.
           </p>
