@@ -13,9 +13,10 @@ body,
 #root {
   height: auto;
 }
+/* Keep html's overflow visible: if html clips, the body becomes its own scroll box and the gig's sticky stage stops
+   sticking. Sideways overflow is clipped on the body and on the gig section instead. */
 html {
   scroll-behavior: smooth;
-  overflow-x: clip;
 }
 body {
   overflow-x: clip;
