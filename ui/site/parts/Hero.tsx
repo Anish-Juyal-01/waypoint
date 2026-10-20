@@ -60,6 +60,10 @@ function RollingHeadline() {
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
             {word}.
+            {/* A hand-drawn marker loop, drawn on fresh around each new word. */}
+            <svg className="roll-loop" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden>
+              <path pathLength={1} d="M7 23 C 5 5, 93 2, 96 18 S 33 41, 11 31 C 8 29, 9 25, 13 23" />
+            </svg>
           </motion.span>
         </AnimatePresence>
       </span>

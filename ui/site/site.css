@@ -1429,48 +1429,51 @@ body {
 }
 
 /* ── Hero toys ── */
-/* The headline's rolling device word, on its own line so the first line never reflows. */
+/* The headline's rolling device word, on its own line so the first line never reflows. The slot has room above and
+   below for the marker loop, which would otherwise be clipped with the roll. */
 .roll-slot {
   display: block;
   position: relative;
   overflow: hidden;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+  padding: 0.16em 0.3em 0.2em;
+  margin: -0.16em -0.3em -0.2em;
 }
 .roll-word {
   position: relative;
   display: inline-block;
+  padding: 0 0.22em;
+  margin-left: -0.22em;
   transform-origin: 0 100%;
   color: var(--color-tx-lime);
   text-shadow: 0.05em 0.05em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
 }
-/* A sunflower highlighter stroke that wipes in under each new word. */
-.roll-word::before {
-  content: "";
+.roll-loop {
   position: absolute;
-  left: -0.06em;
-  right: 0.1em;
-  bottom: 0.1em;
-  height: 0.42em;
-  z-index: -1;
-  border-radius: 0.12em 0.3em 0.16em 0.26em;
-  background: var(--color-sun);
-  opacity: 0.85;
-  rotate: -1.2deg;
-  transform-origin: left;
-  animation: hl-wipe 0.55s var(--ease-out-expo) 0.15s both;
+  inset: -0.08em 0 -0.12em;
+  width: 100%;
+  height: calc(100% + 0.2em);
+  overflow: visible;
+  pointer-events: none;
 }
-:root:not([data-theme="light"]) .roll-word::before {
-  opacity: 0.35;
+.roll-loop path {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 3.5px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: loop-draw 0.7s var(--ease-out-expo) 0.25s forwards;
 }
-@keyframes hl-wipe {
-  from {
-    transform: scaleX(0);
+@keyframes loop-draw {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .roll-word::before {
+  .roll-loop path {
     animation: none;
+    stroke-dashoffset: 0;
   }
 }
 /* A blinking on-air light in the stamp. */
