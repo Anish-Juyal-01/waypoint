@@ -5,9 +5,7 @@ import { Wordmark } from "../src/components/Wordmark";
 import { DOWNLOAD, INSTALL_GUIDE, REPO } from "./parts/acts";
 import { Gig } from "./parts/Gig";
 import { Hero } from "./parts/Hero";
-import { HouseRules } from "./parts/HouseRules";
-import { Lineup } from "./parts/Lineup";
-import { RunningOrder } from "./parts/RunningOrder";
+import { Showtime } from "./parts/Showtime";
 import { Ticket } from "./parts/Ticket";
 import { pushLevel } from "./stubs/store";
 
@@ -96,9 +94,7 @@ export function App() {
       <main id="top" className="relative z-[1]">
         <Hero />
         <Gig />
-        <RunningOrder />
-        <HouseRules />
-        <Lineup />
+        <Showtime />
         <Ticket />
       </main>
 

@@ -15,6 +15,7 @@ body,
 }
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 body {
   overflow-x: clip;
@@ -540,39 +541,6 @@ button {
   transform: scale(0.94);
 }
 
-/* ── Gig poster ── */
-.poster {
-  position: relative;
-  padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 56px);
-  border-radius: 30px;
-  background:
-    radial-gradient(color-mix(in srgb, var(--color-lime) 22%, transparent) 1.4px, transparent 1.8px) 0 0 / 12px 12px,
-    var(--color-ink-800);
-  box-shadow: 7px 7px 0 0 color-mix(in srgb, var(--ink-2) 50%, transparent);
-}
-.poster-kicker {
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-tx-lime);
-}
-.poster-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-variation-settings: "opsz" 96;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
-  text-transform: uppercase;
-  color: var(--color-fg);
-  text-shadow: 0.045em 0.045em 0 var(--shift-ink);
-}
-.poster-name.is-ink {
-  color: var(--color-tx-lime);
-  text-shadow: 0.045em 0.045em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
-}
-
 /* ── Ticket ── */
 .ticket {
   display: grid;
@@ -709,35 +677,29 @@ button {
   --tint: var(--color-lime);
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   border-radius: 30px;
   background: color-mix(in srgb, var(--tint) 11%, var(--color-ink-900));
 }
+/* The corner discs are drawn inside the panel's own box (no overflow clipping), so a falling stage can pass over
+   the panel's edges. */
 .venue-panel::before,
 .venue-panel::after {
   content: "";
   position: absolute;
+  inset: 0;
   z-index: -1;
-  border-radius: 50%;
+  border-radius: inherit;
   pointer-events: none;
 }
 /* Halftone disc, top right. */
 .venue-panel::before {
-  top: -120px;
-  right: -90px;
-  width: 360px;
-  height: 360px;
   background: radial-gradient(color-mix(in srgb, var(--tint) 55%, transparent) 2.4px, transparent 2.9px) 0 0 / 9px 9px;
-  -webkit-mask: radial-gradient(closest-side, #000 55%, transparent);
-  mask: radial-gradient(closest-side, #000 55%, transparent);
+  -webkit-mask: radial-gradient(circle at 100% 0, #000 0 120px, transparent 240px);
+  mask: radial-gradient(circle at 100% 0, #000 0 120px, transparent 240px);
 }
 /* Solid ink disc, bottom left, misregistered against the dots. */
 .venue-panel::after {
-  bottom: -150px;
-  left: -110px;
-  width: 300px;
-  height: 300px;
-  background: color-mix(in srgb, var(--tint) 22%, transparent);
+  background: radial-gradient(circle at 0 100%, color-mix(in srgb, var(--tint) 22%, transparent) 0 150px, transparent 151px);
 }
 .tint-lime {
   --tint: var(--color-lime);
@@ -755,8 +717,7 @@ button {
   background: color-mix(in srgb, var(--tint) 13%, var(--color-ink-800));
 }
 .tint-blue::after {
-  left: auto;
-  right: -120px;
+  background: radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--tint) 22%, transparent) 0 150px, transparent 151px);
 }
 
 /* ── Hero: the marquee sign ── */
@@ -920,4 +881,73 @@ button {
   .peek-hem > * {
     animation: none;
   }
+}
+
+/* Where the stage stood once it has fallen: a dashed outline on the panel. */
+.stage-ghost {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  border: 3px dashed var(--line-strong);
+  background: radial-gradient(var(--line) 1.2px, transparent 1.6px) 0 0 / 12px 12px;
+}
+@media (max-width: 640px) {
+  .stage-ghost {
+    border-radius: 16px;
+  }
+}
+
+/* Dust puffs where the stage lands. */
+.dust {
+  position: absolute;
+  inset: auto 0 -6px;
+  height: 0;
+  pointer-events: none;
+}
+.dust i {
+  position: absolute;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-fg) 22%, transparent);
+  animation: puff 0.7s var(--ease-out-expo) forwards;
+}
+.dust i:nth-child(1) {
+  left: 4%;
+  --dx: -36px;
+}
+.dust i:nth-child(2) {
+  left: 18%;
+  --dx: -14px;
+  animation-delay: 40ms;
+}
+.dust i:nth-child(3) {
+  right: 18%;
+  --dx: 14px;
+  animation-delay: 60ms;
+}
+.dust i:nth-child(4) {
+  right: 4%;
+  --dx: 36px;
+}
+@keyframes puff {
+  from {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0.9;
+  }
+  to {
+    transform: translate(var(--dx), -18px) scale(1.5);
+    opacity: 0;
+  }
+}
+.coin-sm {
+  width: 50px;
+  height: 50px;
+}
+.btn-ink:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+  box-shadow: 4px 4px 0 0 var(--ink-2);
 }

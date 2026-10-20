@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { ACTS, act, type ActId } from "./acts";
 import { Stage, type OnStage } from "./Stage";
@@ -54,7 +54,7 @@ const BEATS: Beat[] = [
     lit: "desk",
     gone: ["headphones"],
     title: "That's the whole gig.",
-    body: "Rank your devices once. Waypoint checks that every switch really happened, and tells you when one didn't.",
+    body: "Rank your devices once and Waypoint keeps it that way, checking that every switch really happened. Now run your own show.",
   },
 ];
 
@@ -62,16 +62,31 @@ const BEATS: Beat[] = [
  * The hook: a pinned stage that plays a short gig as you scroll. Amps (devices) roll on, the spotlight only moves to
  * one that outranks whoever's playing, and when the headliner's battery dies it falls back down the setlist.
  */
+/** One screen of scrolling per beat, plus one at the end where the stage falls through the floor. */
+const UNITS = BEATS.length + 1;
+
 export function Gig() {
   const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
   const [beat, setBeat] = useState(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
+  const beats = useTransform(scrollYProgress, (p) => Math.min(1, (p * UNITS) / BEATS.length));
+  const progress = useSpring(beats, { stiffness: 140, damping: 30 });
 
   useMotionValueEvent(scrollYProgress, "change", (p) => {
-    const next = Math.min(BEATS.length - 1, Math.max(0, Math.floor(p * BEATS.length)));
+    const next = Math.min(BEATS.length - 1, Math.max(0, Math.floor(p * UNITS)));
     setBeat((b) => (b === next ? b : next));
   });
+
+  // After the last beat the whole stage tips and falls (gravity: it speeds up), out of the bottom of the screen and
+  // into the next section, where it lands.
+  const drop = useTransform(scrollYProgress, (p) => (reduce ? 0 : Math.min(1, Math.max(0, p * UNITS - BEATS.length))));
+  const fallY = useTransform(drop, (d) => `${d * d * 125}vh`);
+  const fallRotate = useTransform(drop, (d) => d * d * 16 + Math.sin(d * 9) * 2 * d);
+  const ghost = useTransform(drop, [0, 0.15], [0, 1]);
+  // By the end of the fall it's below the screen; hide it there so it doesn't reappear over the next section, where
+  // its twin lands.
+  const fallOpacity = useTransform(drop, [0.82, 0.9], [1, 0]);
 
   // The curtains part as the venue slides up into place, before the first beat.
   const { scrollYProgress: entering } = useScroll({ target: ref, offset: ["start end", "start start"] });
@@ -79,7 +94,7 @@ export function Gig() {
 
   const b = BEATS[beat];
   return (
-    <section ref={ref} className="relative px-3 md:px-6" style={{ height: `${BEATS.length * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
+    <section ref={ref} className="relative z-[3] overflow-x-clip px-3 md:px-6" style={{ height: `${UNITS * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
       <div className="sticky top-[76px] flex h-[calc(100dvh-88px)] items-stretch">
         <div className="venue-panel tint-blue mx-auto grid w-full max-w-[1320px] grid-cols-1 content-center items-center gap-5 p-4 md:p-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-10 lg:p-10">
           <div className="relative z-[1] order-2 min-h-[190px] lg:order-1 lg:min-h-[480px]">
@@ -91,7 +106,12 @@ export function Gig() {
           {/* Below the two-column layout the stage shares the pinned screen with the caption, so its width is capped
               by the screen height. */}
           <div className="relative z-[1] order-1 mx-auto w-full max-w-[max(260px,calc((100dvh-400px)*1.45))] lg:order-2 lg:max-w-none">
-            <Stage acts={b.on} lit={b.lit} curtain={curtain} />
+            <div className="relative">
+              <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }} />
+              <motion.div style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
+                <Stage acts={b.on} lit={b.lit} curtain={curtain} />
+              </motion.div>
+            </div>
             <div className="mt-3 flex items-center gap-3" aria-hidden>
               <div className="gig-rail">
                 <motion.span style={{ scaleX: progress }} />
