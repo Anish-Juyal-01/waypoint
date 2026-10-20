@@ -971,3 +971,72 @@ button {
   text-transform: uppercase;
   pointer-events: none;
 }
+
+/* Pals panic while their stage falls: the amps rattle. */
+.amp[data-panic="falling"] .amp-pal {
+  animation: rattle 0.18s linear infinite;
+}
+.amp[data-panic="falling"] .amp-box {
+  animation: rattle 0.22s linear -0.1s infinite;
+}
+@keyframes rattle {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  25% {
+    translate: -1.5px -1px;
+    rotate: -3deg;
+  }
+  75% {
+    translate: 1.5px 0;
+    rotate: 3deg;
+  }
+}
+.amp[data-panic="phew"] .amp-pal {
+  animation: hop 0.9s ease-in-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .amp[data-panic] .amp-pal,
+  .amp[data-panic] .amp-box {
+    animation: none;
+  }
+}
+/* (The fox's wrapper keeps its own centring animation; only the sprite inside rattles.) */
+.peek-split.is-falling > :last-child,
+.peek-hem.is-falling > * {
+  animation: rattle 0.2s linear infinite;
+}
+.peek-split .amp-bubble {
+  bottom: calc(100% + 4px);
+}
+
+/* "Switch the output here, behind Waypoint's back" button on each setlist row. */
+.switch-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid var(--line-strong);
+  color: var(--color-fg-2);
+  transition:
+    background-color 160ms,
+    color 160ms,
+    border-color 160ms,
+    transform 220ms var(--ease-spring);
+}
+.switch-btn:hover:not(:disabled) {
+  background: var(--color-coral);
+  border-color: var(--riso-line);
+  color: var(--color-on-accent);
+  transform: rotate(-10deg) scale(1.08);
+}
+.switch-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.switch-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}

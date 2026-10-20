@@ -1,5 +1,5 @@
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { useRef, useState } from "react";
 import { CodeXml, Download } from "lucide-react";
 import { Critter } from "../../src/pals/Critter";
 import { DOWNLOAD, REPO } from "./acts";
@@ -20,6 +20,9 @@ export function Hero() {
   const fallY = useTransform(fall, (p) => `${p * 100 + p * p * 55}vh`);
   const fallRotate = useTransform(fall, (p) => p * p * 12);
   const fallOpacity = useTransform(fall, [0.7, 0.92], [1, 0]);
+  const [falling, setFalling] = useState(false);
+  useMotionValueEvent(fall, "change", (p) => setFalling(p > 0.06));
+  const face = falling ? "alarm" : "idle";
 
   return (
     <section ref={ref} className="relative z-[4] px-3 pt-[76px] pb-3 md:px-6">
@@ -69,13 +72,14 @@ export function Hero() {
           <div className="facade" aria-hidden>
             <div className="curtain curtain-l" />
             <div className="curtain curtain-r" />
-            <div className="peek-split">
-              <Critter name="fox" clip="idle" scale={4} />
+            <div className={`peek-split ${falling ? "is-falling" : ""}`}>
+              {falling && <span className="amp-bubble">whoa whoa whoa</span>}
+              <Critter name="fox" clip={face} scale={4} />
             </div>
-            <div className="peek-hem">
-              <Critter name="beepo" clip="idle" scale={4} />
-              <Critter name="bun" clip="idle" scale={4} />
-              <Critter name="sprout" clip="idle" scale={4} />
+            <div className={`peek-hem ${falling ? "is-falling" : ""}`}>
+              <Critter name="beepo" clip={face} scale={4} />
+              <Critter name="bun" clip={face} scale={4} />
+              <Critter name="sprout" clip={face} scale={4} />
             </div>
           </div>
         </motion.div>

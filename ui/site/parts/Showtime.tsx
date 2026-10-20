@@ -1,24 +1,26 @@
 import { Reorder, motion, useDragControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Hand, Plug, Power, Scale, ShieldCheck, Unplug } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, MousePointerClick, Plug, Power, RotateCcw, Scale, ShieldCheck, Unplug } from "lucide-react";
 import { ACTS, act, headliner, type ActId } from "./acts";
-import { Stage } from "./Stage";
+import { Stage, type Panic } from "./Stage";
 
 type Mode = "off" | "balanced" | "strict";
 
 const MODES: { value: Mode; label: string; icon: typeof Power; ink: string; blurb: string }[] = [
-  { value: "off", label: "Off", icon: Power, ink: "var(--color-neutral)", blurb: "Waypoint only watches. Windows does whatever it likes." },
-  { value: "balanced", label: "Balanced", icon: Scale, ink: "var(--color-sun)", blurb: "Switches when devices come and go. Someone else's switch stays until the next change." },
-  { value: "strict", label: "Strict", icon: ShieldCheck, ink: "var(--color-lime)", blurb: "Your best device always plays. Anyone else's switch is put straight back." },
+  { value: "off", label: "Off", icon: Power, ink: "var(--color-neutral)", blurb: "Waypoint only watches. Whatever Windows picks, plays." },
+  { value: "balanced", label: "Balanced", icon: Scale, ink: "var(--color-sun)", blurb: "Switches when devices come and go. Someone else's pick stays until the next change." },
+  { value: "strict", label: "Strict", icon: ShieldCheck, ink: "var(--color-lime)", blurb: "Your best device always plays. Anyone else's pick is put straight back." },
 ];
 
 const plays = (id: ActId) => `${act(id).name} ${act(id).name.endsWith("s") ? "play" : "plays"}`;
+const label = (m: Mode) => MODES.find((x) => x.value === m)!.label;
 
 /**
- * The stage that fell out of the gig lands here, and it's yours: rank the setlist, pull plugs, pick a mode and try
- * to switch the output behind Waypoint's back. Follows the app's real rules: Off leaves Windows alone (which jumps
- * to whatever connected last), Balanced picks the best device whenever devices or the order change but respects
- * someone else's switch until then, Strict always puts the best device back.
+ * The stage that fell out of the gig lands here, and it's yours. Rank the setlist, pull plugs, and use the switch on
+ * any row to change the output behind Waypoint's back (as a game or Windows would). Follows the app's real rules:
+ * Off leaves Windows alone (which jumps to whatever connected last), Balanced picks your best device whenever devices
+ * or the order change but respects someone else's pick until then, Strict always puts your best device back.
+ * Restore priority goes back to your list in any mode.
  */
 export function Showtime() {
   const [order, setOrder] = useState<ActId[]>(ACTS.map((a) => a.id));
@@ -26,16 +28,33 @@ export function Showtime() {
   const [recent, setRecent] = useState<ActId[]>(["laptop", "monitor", "desk"]);
   const [mode, setMode] = useState<Mode>("balanced");
   const [lit, setLit] = useState<ActId | null>("desk");
-  const [heckled, setHeckled] = useState(false);
+  /** A device someone else switched to, which is still playing (Off or Balanced). */
+  const [picked, setPicked] = useState<ActId | null>(null);
+  /** A device that just grabbed the output and is shouting about it. */
+  const [grabber, setGrabber] = useState<ActId | null>(null);
   const [note, setNote] = useState("Desk speakers play: they're the highest act that's plugged in.");
+  const [panic, setPanic] = useState<Panic | undefined>("falling");
   const timer = useRef(0);
-  const [landed, setLanded] = useState(false);
+  const panicTimer = useRef(0);
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timer.current);
+      window.clearTimeout(panicTimer.current);
+    },
+    [],
+  );
 
+  const landed = () => {
+    setPanic("phew");
+    panicTimer.current = window.setTimeout(() => setPanic(undefined), 1800);
+  };
+
+  /** Back to the running order: the highest act that's plugged in plays. */
   const settle = (nextOrder: ActId[], nextPlugged: Set<ActId>, what: string) => {
     window.clearTimeout(timer.current);
-    setHeckled(false);
+    setPicked(null);
+    setGrabber(null);
     const best = headliner(nextOrder, nextPlugged);
     setLit(best);
     setNote(best ? `${what} ${plays(best)}.` : `${what} Nothing is plugged in, so there's silence.`);
@@ -52,14 +71,16 @@ export function Showtime() {
 
     if (mode === "off") {
       window.clearTimeout(timer.current);
-      setHeckled(false);
+      setGrabber(null);
       if (plugging) {
         setLit(id);
+        setPicked(id);
         setNote(`${act(id).name} connected and Windows jumped straight to it. Off doesn't stop that.`);
       } else if (lit === id) {
         const fallback = [...nextRecent].reverse().find((r) => next.has(r)) ?? null;
-        setLit(fallback);
         const best = headliner(order, next);
+        setLit(fallback);
+        setPicked(fallback && fallback !== best ? fallback : null);
         setNote(
           !fallback
             ? "Everything is unplugged."
@@ -93,43 +114,44 @@ export function Showtime() {
     reorder(next);
   };
 
-  /** Something else (a game, a call app, Windows) switches the output to the monitor; the mode decides what happens. */
-  const heckle = (m: Mode = mode) => {
+  /** Something other than Waypoint (a game, a call app, Windows' own settings) switches the output to `id`. */
+  const switchTo = (id: ActId) => {
     window.clearTimeout(timer.current);
-    if (!plugged.has("monitor")) {
-      setNote("Plug the monitor back in to see that.");
-      return;
-    }
-    setHeckled(true);
-    setLit("monitor");
-    if (m === "strict") {
-      setNote("Something switched to the monitor...");
+    setLit(id);
+    setGrabber(id);
+    if (mode === "strict") {
+      setPicked(null);
+      setNote(`Something switched the output to ${act(id).name}...`);
       timer.current = window.setTimeout(() => {
         const best = headliner(order, plugged);
         setLit(best);
-        setHeckled(false);
+        setGrabber(null);
         setNote(best ? `Strict put it straight back. ${plays(best)}.` : "Strict put it straight back.");
       }, 1000);
-    } else if (m === "balanced") {
-      setNote("Something switched to the monitor. Balanced respects it until a device comes or goes.");
-    } else {
-      setNote("Something switched to the monitor. Off lets it, and only writes it in the log.");
+      return;
     }
+    setPicked(id);
+    setNote(
+      mode === "balanced"
+        ? `Something switched to ${act(id).name}. Balanced respects it until a device comes or goes, or you restore.`
+        : `Something switched to ${act(id).name}. Off lets it and only writes it in the log.`,
+    );
   };
 
-  // Picking a mode shows it working: the stage resets to your best device, then something tries to steal it.
   const pickMode = (m: Mode) => {
-    window.clearTimeout(timer.current);
     setMode(m);
-    setHeckled(false);
-    setLit(headliner(order, plugged));
-    setNote(`${MODES.find((x) => x.value === m)!.label}. Watch what happens when something grabs the output...`);
-    timer.current = window.setTimeout(() => heckle(m), 1100);
+    if (m === "strict") {
+      settle(order, plugged, picked ? "Strict doesn't allow someone else's pick. Back to your list:" : "Strict.");
+      return;
+    }
+    setNote(picked ? `${label(m)}. ${act(picked).name} keeps playing until something changes.` : `${label(m)}. Now switch the output from any row and see what happens.`);
   };
+
+  const restore = () => settle(order, plugged, "Priority restored.");
 
   const onStage = order
     .filter((id) => plugged.has(id))
-    .map((id) => ({ id, rank: order.indexOf(id) + 1, says: id === "monitor" && heckled ? "my turn!" : undefined }));
+    .map((id) => ({ id, rank: order.indexOf(id) + 1, says: id === grabber ? "my turn!" : undefined }));
   const blurb = MODES.find((m) => m.value === mode)!.blurb;
 
   return (
@@ -137,8 +159,9 @@ export function Showtime() {
       <div className="venue-panel tint-sun mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-x-12 gap-y-7 p-5 md:p-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-rows-[auto_1fr] lg:p-12">
         <div className="lg:col-start-1 lg:row-start-1">
           <h2 className="headline text-[clamp(2.2rem,4.6vw,3.6rem)]">Run the show.</h2>
-          <p className="mt-3 max-w-[46ch] text-[1.05rem] leading-relaxed text-fg-2">
-            Drag the setlist, pull plugs, pick a mode, then try to switch the output behind Waypoint's back.
+          <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-fg-2">
+            Rank the setlist and pull plugs. Then hit <MousePointerClick className="inline align-[-3px]" size={17} strokeWidth={2.3} aria-label="switch" /> on
+            any row to switch the output behind Waypoint's back, and see how each mode answers.
           </p>
         </div>
 
@@ -151,10 +174,10 @@ export function Showtime() {
             whileInView={{ y: 0, rotate: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ type: "spring", stiffness: 300, damping: 13, mass: 1.2 }}
-            onAnimationComplete={() => setLanded(true)}
+            onAnimationComplete={landed}
           >
-            <Stage acts={onStage} lit={lit} sign={`House rules: ${MODES.find((m) => m.value === mode)!.label}`} />
-            {landed && (
+            <Stage acts={onStage} lit={lit} sign={`House rules: ${label(mode)}`} panic={panic} />
+            {panic === "phew" && (
               <span className="dust" aria-hidden>
                 <i />
                 <i />
@@ -165,37 +188,44 @@ export function Showtime() {
           </motion.div>
 
           <motion.p
-              key={note}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22 }}
-              className="mt-4 min-h-[3.2em] font-display text-[1.15rem] font-bold leading-snug"
-              aria-live="polite"
-            >
-              {note}
-            </motion.p>
+            key={note}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22 }}
+            className="mt-4 min-h-[3.2em] font-display text-[1.15rem] font-bold leading-snug"
+            aria-live="polite"
+          >
+            {note}
+          </motion.p>
 
-          <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="flex gap-4" role="radiogroup" aria-label="Mode">
-                {MODES.map((m) => {
-                  const Icon = m.icon;
-                  const on = mode === m.value;
-                  return (
-                    <button key={m.value} type="button" role="radio" aria-checked={on} className="coin-btn flex flex-col items-center gap-1.5" onClick={() => pickMode(m.value)}>
-                      <span className="coin coin-sm" style={{ background: on ? m.ink : "transparent", color: on ? "var(--color-on-accent)" : "var(--color-fg)" }}>
-                        <Icon size={19} strokeWidth={2.3} />
-                      </span>
-                      <span className={`font-mono text-[12px] ${on ? "text-fg" : "text-fg-3"}`}>{m.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
+            <div className="flex gap-4" role="radiogroup" aria-label="Mode">
+              {MODES.map((m) => {
+                const Icon = m.icon;
+                const on = mode === m.value;
+                return (
+                  <button key={m.value} type="button" role="radio" aria-checked={on} className="coin-btn flex flex-col items-center gap-1.5" onClick={() => pickMode(m.value)}>
+                    <span className="coin coin-sm" style={{ background: on ? m.ink : "transparent", color: on ? "var(--color-on-accent)" : "var(--color-fg)" }}>
+                      <Icon size={19} strokeWidth={2.3} />
+                    </span>
+                    <span className={`font-mono text-[12px] ${on ? "text-fg" : "text-fg-3"}`}>{m.label}</span>
+                  </button>
+                );
+              })}
             </div>
-            <button type="button" className="btn-ink self-start sm:self-auto" onClick={() => heckle()} disabled={lit === "monitor"}>
-              <Hand size={17} strokeWidth={2.4} />
-              Switch to the monitor
-            </button>
+            {picked && (
+                <motion.button
+                  type="button"
+                  className="btn-ink"
+                  onClick={restore}
+                  initial={{ opacity: 0, scale: 0.8, rotate: -4 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                >
+                  <RotateCcw size={17} strokeWidth={2.4} />
+                  Restore priority
+                </motion.button>
+              )}
           </div>
           <p className="mt-3 max-w-[60ch] text-[0.92rem] text-fg-3">{blurb}</p>
         </div>
@@ -215,6 +245,7 @@ export function Showtime() {
                 playing={lit === id}
                 onToggle={() => togglePlug(id)}
                 onMove={(by) => move(id, by)}
+                onSwitch={() => switchTo(id)}
               />
             ))}
           </Reorder.Group>
@@ -233,6 +264,7 @@ function Row({
   playing,
   onToggle,
   onMove,
+  onSwitch,
 }: {
   id: ActId;
   rank: number;
@@ -242,6 +274,7 @@ function Row({
   playing: boolean;
   onToggle: () => void;
   onMove: (by: -1 | 1) => void;
+  onSwitch: () => void;
 }) {
   const controls = useDragControls();
   const a = act(id);
@@ -274,7 +307,7 @@ function Row({
         <span className="block truncate font-display text-[16.5px] font-bold">
           <span className={playing ? "hl" : undefined}>{a.name}</span>
         </span>
-        <span className="block font-mono text-[11px] text-fg-3">{a.via}</span>
+        <span className="block font-mono text-[11px] text-fg-3">{playing ? "playing" : a.via}</span>
       </span>
       <span className="hidden items-center gap-1 sm:flex">
         <button type="button" className="icon-btn" onClick={() => onMove(-1)} disabled={first} aria-label={`Move ${a.name} up`}>
@@ -284,6 +317,16 @@ function Row({
           <ArrowDown size={15} strokeWidth={2.4} />
         </button>
       </span>
+      <button
+        type="button"
+        className="switch-btn"
+        onClick={onSwitch}
+        disabled={!plugged || playing}
+        aria-label={`Switch the output to ${a.name} behind Waypoint's back`}
+        title="Switch the output here, the way another app would"
+      >
+        <MousePointerClick size={15} strokeWidth={2.4} />
+      </button>
       <button type="button" className="plug-btn" aria-pressed={plugged} onClick={onToggle} aria-label={`${a.name}: ${plugged ? "plugged in" : "unplugged"}`}>
         {plugged ? <Plug size={15} strokeWidth={2.4} /> : <Unplug size={15} strokeWidth={2.4} />}
         <span>{plugged ? "In" : "Out"}</span>

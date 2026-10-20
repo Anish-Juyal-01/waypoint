@@ -23,10 +23,10 @@ export interface Act {
 /** The default running order: index 0 is #1. */
 export const ACTS: Act[] = [
   { id: "headphones", name: "Headphones", tape: "HEADPHONES", via: "Bluetooth", pal: "fox", ink: "violet", x: 50 },
-  { id: "earbuds", name: "Earbuds", tape: "EARBUDS", via: "Bluetooth", pal: "bun", ink: "lime", x: 70 },
-  { id: "desk", name: "Desk speakers", tape: "DESK", via: "USB", pal: "beepo", ink: "sun", x: 30 },
-  { id: "laptop", name: "Laptop speakers", tape: "LAPTOP", via: "Built-in", pal: "sprout", ink: "sky", x: 11 },
-  { id: "monitor", name: "Monitor", tape: "MONITOR", via: "HDMI", pal: "owlet", ink: "coral", x: 89 },
+  { id: "earbuds", name: "Earbuds", tape: "EARBUDS", via: "Bluetooth", pal: "bun", ink: "lime", x: 68 },
+  { id: "desk", name: "Desk speakers", tape: "DESK", via: "USB", pal: "beepo", ink: "sun", x: 32 },
+  { id: "laptop", name: "Laptop speakers", tape: "LAPTOP", via: "Built-in", pal: "sprout", ink: "sky", x: 14 },
+  { id: "monitor", name: "Monitor", tape: "MONITOR", via: "HDMI", pal: "owlet", ink: "coral", x: 86 },
 ];
 
 export const act = (id: ActId) => ACTS.find((a) => a.id === id)!;

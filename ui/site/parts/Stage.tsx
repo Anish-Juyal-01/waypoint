@@ -8,6 +8,24 @@ const LAMP_Y = 0.05;
 const FLOOR_Y = 0.79;
 
 export type AmpMood = "idle" | "lit" | "ignored";
+/** How the whole band feels about the stage itself: mid-fall, or just landed. */
+export type Panic = "falling" | "phew";
+
+/** What each pal shouts while the stage falls. */
+const FALL_LINES: Record<ActId, string> = {
+  headphones: "whoaaa!",
+  earbuds: "eek!",
+  desk: "not again!",
+  laptop: "aaah!",
+  monitor: "hold on!",
+};
+const PHEW_LINES: Record<ActId, string> = {
+  headphones: "phew",
+  earbuds: "we're ok",
+  desk: "phew",
+  laptop: "made it!",
+  monitor: "ow",
+};
 
 export interface OnStage {
   id: ActId;
@@ -27,6 +45,7 @@ export function Stage({
   compact,
   curtain,
   sign,
+  panic,
   className,
 }: {
   acts: OnStage[];
@@ -36,13 +55,15 @@ export function Stage({
   curtain?: MotionValue<number>;
   /** A small sign hung on the truss (e.g. the current house rules); thunks in again whenever it changes. */
   sign?: string;
+  panic?: Panic;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(1.6);
   const open = useMotionValue(1);
   const curtainOpen = curtain ?? open;
-  const curtainScale = useTransform(curtainOpen, [0, 1], [1, 0.14]);
+  // Open curtains are pulled right back into the wings so they never hide the end amps.
+  const curtainScale = useTransform(curtainOpen, [0, 1], [1, 0.07]);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -99,7 +120,7 @@ export function Stage({
 
       <AnimatePresence initial={false}>
         {acts.map((a) => (
-          <AmpSlot key={a.id} {...a} lit={lit === a.id} compact={compact} />
+          <AmpSlot key={a.id} {...a} lit={lit === a.id} compact={compact} panic={panic} index={acts.indexOf(a)} />
         ))}
       </AnimatePresence>
 
@@ -119,11 +140,22 @@ function stageLabel(acts: OnStage[], lit: ActId | null) {
   return lit ? `On stage: ${names}. Playing: ${act(lit).name}.` : `On stage: ${names}. Nothing is playing.`;
 }
 
-function AmpSlot({ id, rank, mood, says, lit, compact }: OnStage & { lit: boolean; compact?: boolean }) {
+function AmpSlot({
+  id,
+  rank,
+  mood,
+  says,
+  lit,
+  compact,
+  panic,
+  index,
+}: OnStage & { lit: boolean; compact?: boolean; panic?: Panic; index: number }) {
   const a = act(id);
   const fromLeft = a.x < 50;
   const state: AmpMood = lit ? "lit" : (mood ?? "idle");
-  const clip = state === "lit" ? "cheer" : state === "ignored" ? "worried" : "idle";
+  const clip = panic === "falling" ? "alarm" : panic === "phew" ? "cheer" : state === "lit" ? "cheer" : state === "ignored" ? "worried" : "idle";
+  // Every other pal shouts while falling (all of them at once is unreadable); everyone else keeps their own line.
+  const line = panic === "falling" ? (index % 2 === 0 ? FALL_LINES[id] : undefined) : panic === "phew" ? (index % 2 === 1 || lit ? PHEW_LINES[id] : undefined) : says;
 
   return (
     <motion.div
@@ -134,18 +166,18 @@ function AmpSlot({ id, rank, mood, says, lit, compact }: OnStage & { lit: boolea
       exit={{ y: 40, rotate: fromLeft ? -24 : 24, opacity: 0, transition: { duration: 0.5, ease: [0.5, 0, 0.75, 0] } }}
       transition={{ type: "spring", stiffness: 120, damping: 17 }}
     >
-      <div className="amp" data-state={state} style={{ "--amp-ink": `var(--color-${a.ink})` } as React.CSSProperties}>
+      <div className="amp" data-state={state} data-panic={panic} style={{ "--amp-ink": `var(--color-${a.ink})` } as React.CSSProperties}>
         <AnimatePresence>
-          {says && (
+          {line && (
             <motion.span
-              key={says}
+              key={line}
               className="amp-bubble"
               initial={{ opacity: 0, y: 8, scale: 0.7, rotate: -6 }}
               animate={{ opacity: 1, y: 0, scale: 1, rotate: -3 }}
               exit={{ opacity: 0, y: -6, scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 380, damping: 20, delay: 0.35 }}
+              transition={{ type: "spring", stiffness: 380, damping: 20, delay: panic ? 0.05 * index : 0.35 }}
             >
-              {says}
+              {line}
             </motion.span>
           )}
         </AnimatePresence>

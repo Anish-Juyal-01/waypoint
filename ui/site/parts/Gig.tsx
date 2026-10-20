@@ -87,6 +87,8 @@ export function Gig() {
   // By the end of the fall it's below the screen; hide it there so it doesn't reappear over the next section, where
   // its twin lands.
   const fallOpacity = useTransform(drop, [0.82, 0.9], [1, 0]);
+  const [falling, setFalling] = useState(false);
+  useMotionValueEvent(drop, "change", (d) => setFalling(d > 0.02));
 
   // The curtains part as the venue slides up into place, before the first beat.
   const { scrollYProgress: entering } = useScroll({ target: ref, offset: ["start end", "start start"] });
@@ -109,7 +111,7 @@ export function Gig() {
             <div className="relative">
               <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }} />
               <motion.div className="pointer-events-none" style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
-                <Stage acts={b.on} lit={b.lit} curtain={curtain} />
+                <Stage acts={b.on} lit={b.lit} curtain={curtain} panic={falling ? "falling" : undefined} />
               </motion.div>
             </div>
             <div className="mt-3 flex items-center gap-3" aria-hidden>
