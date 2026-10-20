@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScro
 import { useEffect, useRef, useState } from "react";
 import { Critter } from "../../src/pals/Critter";
 import { CRITTERS, type CritterName } from "../../src/pals/data";
+import { LeftBehind } from "./LeftBehind";
 
 const BOARD = "WAYPOINT".split("");
 
@@ -63,6 +64,8 @@ export function Hero() {
   const fallY = useTransform(fall, (p) => `${p * 100 + p * p * 55}vh`);
   const fallRotate = useTransform(fall, (p) => p * p * 12);
   const fallOpacity = useTransform(fall, [0.7, 0.92], [1, 0]);
+  // The outline the venue front leaves behind, and the pals left standing in it.
+  const slot = useTransform(fall, [0.02, 0.2], [0, 1]);
   const [falling, setFalling] = useState(false);
   useMotionValueEvent(fall, "change", (p) => setFalling(p > 0.06));
 
@@ -123,8 +126,21 @@ export function Hero() {
           </div>
         </div>
 
+        <div className="relative z-[1] mx-auto w-full max-w-[600px]">
+        {/* Etched into the card where the venue front stands; it only shows once the front has fallen away. */}
+        <div className="etched-slot" aria-hidden>
+          <motion.div className="etched-slot-fill" style={{ opacity: slot }}>
+            <LeftBehind
+              pals={[
+                { name: "puff", says: "our stage!" },
+                { name: "chick", says: "we were next..." },
+                { name: "radish", says: "come back!" },
+              ]}
+            />
+          </motion.div>
+        </div>
         <motion.div
-          className="pointer-events-none relative z-[1] mx-auto w-full max-w-[600px]"
+          className="pointer-events-none relative"
           style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "70% 100%" }}
         >
           <div className="marquee-sign">
@@ -182,6 +198,7 @@ export function Hero() {
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
     </section>
   );

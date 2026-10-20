@@ -147,7 +147,14 @@ export function Showtime() {
     setNote(picked ? `${label(m)}. ${act(picked).name} keeps playing until something changes.` : `${label(m)}. Now switch the output from any row and see what happens.`);
   };
 
-  const restore = () => settle(order, plugged, "Priority restored.");
+  const restore = () => {
+    const best = headliner(order, plugged);
+    if (!picked && lit === best) {
+      setNote(best ? `Already on your list. ${plays(best)}.` : "Nothing is plugged in.");
+      return;
+    }
+    settle(order, plugged, "Priority restored.");
+  };
 
   const onStage = order
     .filter((id) => plugged.has(id))
@@ -213,24 +220,45 @@ export function Showtime() {
                 );
               })}
             </div>
-            {picked && (
-                <motion.button
-                  type="button"
-                  className="btn-ink"
-                  onClick={restore}
-                  initial={{ opacity: 0, scale: 0.8, rotate: -4 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                >
-                  <RotateCcw size={17} strokeWidth={2.4} />
-                  Restore priority
-                </motion.button>
-              )}
+            {/* Always here, like the app's button; it does nothing visible when your #1 is already playing. */}
+            <motion.button
+              type="button"
+              className="btn-ink"
+              data-armed={!!picked}
+              onClick={restore}
+              animate={picked ? { scale: [1, 1.08, 1], rotate: [0, -3, 0] } : { scale: 1, rotate: 0 }}
+              transition={{ duration: 0.45 }}
+            >
+              <RotateCcw size={17} strokeWidth={2.4} />
+              Restore priority
+            </motion.button>
           </div>
           <p className="mt-3 max-w-[60ch] text-[0.92rem] text-fg-3">{blurb}</p>
 
+        </div>
+
+        <div className="self-start lg:col-start-1 lg:row-start-2">
+        <div className="paper-sheet">
+          <span className="tape tape-left" aria-hidden />
+          <span className="tape tape-right" aria-hidden />
+          <Reorder.Group axis="y" values={order} onReorder={reorder} className="flex flex-col" aria-label="Your setlist">
+            {order.map((id, i) => (
+              <Row
+                key={id}
+                id={id}
+                rank={i + 1}
+                first={i === 0}
+                lastRow={i === order.length - 1}
+                plugged={plugged.has(id)}
+                playing={lit === id}
+                onToggle={() => togglePlug(id)}
+                onMove={(by) => move(id, by)}
+              />
+            ))}
+          </Reorder.Group>
+        </div>
           {/* Someone else switches the output: one button per plugged-in device. */}
-          <div className="switch-bar mt-5">
+          <div className="switch-bar mt-6">
             <p className="flex items-center gap-2 font-mono text-[12px] text-fg-3">
               <MousePointerClick size={15} strokeWidth={2.3} aria-hidden />
               Switch the output behind Waypoint's back:
@@ -257,26 +285,6 @@ export function Showtime() {
               })}
             </div>
           </div>
-        </div>
-
-        <div className="paper-sheet self-start lg:col-start-1 lg:row-start-2">
-          <span className="tape tape-left" aria-hidden />
-          <span className="tape tape-right" aria-hidden />
-          <Reorder.Group axis="y" values={order} onReorder={reorder} className="flex flex-col" aria-label="Your setlist">
-            {order.map((id, i) => (
-              <Row
-                key={id}
-                id={id}
-                rank={i + 1}
-                first={i === 0}
-                lastRow={i === order.length - 1}
-                plugged={plugged.has(id)}
-                playing={lit === id}
-                onToggle={() => togglePlug(id)}
-                onMove={(by) => move(id, by)}
-              />
-            ))}
-          </Reorder.Group>
         </div>
       </div>
     </section>

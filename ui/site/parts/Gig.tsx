@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { ACTS, act, type ActId } from "./acts";
+import { LeftBehind } from "./LeftBehind";
 import { Stage, type OnStage } from "./Stage";
 
 interface Beat {
@@ -109,7 +110,14 @@ export function Gig() {
               by the screen height. */}
           <div className="relative z-[1] order-1 mx-auto w-full max-w-[max(260px,calc((100dvh-400px)*1.45))] lg:order-2 lg:max-w-none">
             <div className="relative">
-              <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }} />
+              <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }}>
+                <LeftBehind
+                  pals={[
+                    { name: "shroom", says: "it's gone..." },
+                    { name: "slime", says: "we didn't even play" },
+                  ]}
+                />
+              </motion.div>
               <motion.div className="pointer-events-none" style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
                 <Stage acts={b.on} lit={b.lit} curtain={curtain} panic={falling ? "falling" : undefined} />
               </motion.div>
