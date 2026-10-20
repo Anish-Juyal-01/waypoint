@@ -952,3 +952,22 @@ button {
   transform: none;
   box-shadow: 4px 4px 0 0 var(--ink-2);
 }
+
+/* House-rules sign on the stage. */
+.stage-sign {
+  position: absolute;
+  top: 9%;
+  left: 3%;
+  z-index: 5;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 2px solid #ffe4ef;
+  color: #ffe4ef;
+  background: rgba(18, 8, 20, 0.55);
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.1vw, 12.5px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}

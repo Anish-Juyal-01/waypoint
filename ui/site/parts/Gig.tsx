@@ -108,7 +108,7 @@ export function Gig() {
           <div className="relative z-[1] order-1 mx-auto w-full max-w-[max(260px,calc((100dvh-400px)*1.45))] lg:order-2 lg:max-w-none">
             <div className="relative">
               <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }} />
-              <motion.div style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
+              <motion.div className="pointer-events-none" style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
                 <Stage acts={b.on} lit={b.lit} curtain={curtain} />
               </motion.div>
             </div>

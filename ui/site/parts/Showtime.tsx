@@ -1,4 +1,4 @@
-import { AnimatePresence, Reorder, motion, useDragControls } from "motion/react";
+import { Reorder, motion, useDragControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Hand, Plug, Power, Scale, ShieldCheck, Unplug } from "lucide-react";
 import { ACTS, act, headliner, type ActId } from "./acts";
@@ -93,34 +93,38 @@ export function Showtime() {
     reorder(next);
   };
 
-  const pickMode = (m: Mode) => {
-    setMode(m);
-    if (m === "off") {
-      window.clearTimeout(timer.current);
-      setHeckled(false);
-      setNote("Off. Waypoint is just watching now.");
+  /** Something else (a game, a call app, Windows) switches the output to the monitor; the mode decides what happens. */
+  const heckle = (m: Mode = mode) => {
+    window.clearTimeout(timer.current);
+    if (!plugged.has("monitor")) {
+      setNote("Plug the monitor back in to see that.");
       return;
     }
-    settle(order, plugged, `${MODES.find((x) => x.value === m)!.label}.`);
-  };
-
-  const heckle = () => {
-    window.clearTimeout(timer.current);
     setHeckled(true);
     setLit("monitor");
-    if (mode === "strict") {
+    if (m === "strict") {
       setNote("Something switched to the monitor...");
       timer.current = window.setTimeout(() => {
         const best = headliner(order, plugged);
         setLit(best);
         setHeckled(false);
-        setNote(best ? `Put straight back. ${plays(best)}.` : "Put straight back.");
-      }, 900);
-    } else if (mode === "balanced") {
-      setNote("Respected. Maybe you meant it. Waypoint goes back to your list when a device comes or goes.");
+        setNote(best ? `Strict put it straight back. ${plays(best)}.` : "Strict put it straight back.");
+      }, 1000);
+    } else if (m === "balanced") {
+      setNote("Something switched to the monitor. Balanced respects it until a device comes or goes.");
     } else {
-      setNote("The monitor plays. Off only writes it down in the activity log.");
+      setNote("Something switched to the monitor. Off lets it, and only writes it in the log.");
     }
+  };
+
+  // Picking a mode shows it working: the stage resets to your best device, then something tries to steal it.
+  const pickMode = (m: Mode) => {
+    window.clearTimeout(timer.current);
+    setMode(m);
+    setHeckled(false);
+    setLit(headliner(order, plugged));
+    setNote(`${MODES.find((x) => x.value === m)!.label}. Watch what happens when something grabs the output...`);
+    timer.current = window.setTimeout(() => heckle(m), 1100);
   };
 
   const onStage = order
@@ -149,7 +153,7 @@ export function Showtime() {
             transition={{ type: "spring", stiffness: 300, damping: 13, mass: 1.2 }}
             onAnimationComplete={() => setLanded(true)}
           >
-            <Stage acts={onStage} lit={lit} />
+            <Stage acts={onStage} lit={lit} sign={`House rules: ${MODES.find((m) => m.value === mode)!.label}`} />
             {landed && (
               <span className="dust" aria-hidden>
                 <i />
@@ -160,19 +164,16 @@ export function Showtime() {
             )}
           </motion.div>
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.p
+          <motion.p
               key={note}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4, transition: { duration: 0.12 } }}
               transition={{ duration: 0.22 }}
               className="mt-4 min-h-[3.2em] font-display text-[1.15rem] font-bold leading-snug"
               aria-live="polite"
             >
               {note}
             </motion.p>
-          </AnimatePresence>
 
           <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -191,7 +192,7 @@ export function Showtime() {
                 })}
               </div>
             </div>
-            <button type="button" className="btn-ink self-start sm:self-auto" onClick={heckle} disabled={!plugged.has("monitor") || lit === "monitor"}>
+            <button type="button" className="btn-ink self-start sm:self-auto" onClick={() => heckle()} disabled={lit === "monitor"}>
               <Hand size={17} strokeWidth={2.4} />
               Switch to the monitor
             </button>

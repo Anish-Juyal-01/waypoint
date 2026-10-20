@@ -26,6 +26,7 @@ export function Stage({
   lit,
   compact,
   curtain,
+  sign,
   className,
 }: {
   acts: OnStage[];
@@ -33,6 +34,8 @@ export function Stage({
   compact?: boolean;
   /** 0 = curtains closed, 1 = open. Without it the stage has no curtains. */
   curtain?: MotionValue<number>;
+  /** A small sign hung on the truss (e.g. the current house rules); thunks in again whenever it changes. */
+  sign?: string;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -82,6 +85,17 @@ export function Stage({
         transition={{ type: "spring", stiffness: 70, damping: 14, mass: 1.1 }}
       />
       <div className="stage-lamp" aria-hidden style={{ top: `${LAMP_Y * 100}%` }} />
+      {sign && (
+        <motion.span
+          key={sign}
+          className="stage-sign"
+          initial={{ rotate: -24, scale: 1.7, opacity: 0 }}
+          animate={{ rotate: -5, scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 420, damping: 16 }}
+        >
+          {sign}
+        </motion.span>
+      )}
 
       <AnimatePresence initial={false}>
         {acts.map((a) => (
