@@ -49,6 +49,41 @@ function useTheme() {
   return { theme, toggle };
 }
 
+/** How sections are framed (see site.css). The switcher is for picking one; it only exists on the dev server. */
+const FRAMES = [
+  { id: "riso", label: "Riso card" },
+  { id: "misprint", label: "Misprint" },
+  { id: "roadcase", label: "Road case" },
+  { id: "ticket", label: "Ticket" },
+  { id: "valance", label: "Valance" },
+  { id: "torn", label: "Torn paper" },
+  { id: "poster", label: "Poster" },
+] as const;
+const DEFAULT_FRAME = "riso";
+const FRAME_KEY = "waypoint-site-frame";
+
+function FrameSwitcher() {
+  const [frame, setFrame] = useState<string>(() => document.documentElement.dataset.bg ?? DEFAULT_FRAME);
+  useEffect(() => {
+    document.documentElement.dataset.bg = frame;
+    try {
+      localStorage.setItem(FRAME_KEY, frame);
+    } catch {
+      /* not remembered in a private window */
+    }
+  }, [frame]);
+  return (
+    <div className="bg-switcher" role="group" aria-label="Section background (dev only)">
+      <span>Background</span>
+      {FRAMES.map((f) => (
+        <button key={f.id} type="button" aria-pressed={frame === f.id} onClick={() => setFrame(f.id)}>
+          {f.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** A steady fake beat so the masthead letters bob like they do in the app. */
 function useBeat() {
   useEffect(() => {
@@ -116,6 +151,7 @@ export function App() {
           <span className="text-fg-3">MIT licence. Made by Anish Juyal.</span>
         </div>
       </footer>
+      {import.meta.env.DEV && <FrameSwitcher />}
     </MotionConfig>
   );
 }

@@ -670,72 +670,45 @@ button {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Poster wall: the page is a wall and every section is a gig
-   poster pasted onto it, taped at the top, with two older posters
-   (other inks) peeking out from behind. Each tint arranges its
-   backing posters differently so the wall doesn't repeat.
+   Section frames. Every section sits in a .venue-panel; how that
+   panel is drawn depends on html[data-bg] (picked with the dev-only
+   switcher at the bottom of the page). Decorations live on the panel
+   background or on ::before/::after at z -1, never on a clip or mask
+   of the panel itself, so a falling stage can always leave it.
    ══════════════════════════════════════════════════════════════ */
-body {
-  background: var(--wall);
-}
 :root {
-  --wall: #160b1b;
+  --wall: var(--color-ink-900);
   --paper: #29172f;
   --tape: rgba(255, 228, 239, 0.3);
+  --case: #231f28;
+  --case-edge: #8f8a98;
+  --metal: #c9c5cf;
   --paste-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.7);
 }
 :root[data-theme="light"] {
-  --wall: #e3d6bf;
   --paper: #fdf9f1;
   --tape: rgba(255, 210, 63, 0.7);
+  --case: #e4e1e8;
+  --case-edge: #6f6a78;
+  --metal: #9d98a6;
   --paste-shadow: 0 2px 0 rgba(31, 42, 120, 0.12), 0 14px 30px -18px rgba(31, 42, 120, 0.45);
+}
+body {
+  background: var(--wall);
 }
 .venue-panel {
   --tint: var(--color-lime);
   --back-a: var(--color-violet);
   --back-b: var(--color-sun);
   position: relative;
-  border-radius: 6px;
-  background:
-    /* two strips of tape across the top corners */
-    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
-    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
-    /* a light wash of the poster's own ink over the paper */
-    linear-gradient(color-mix(in srgb, var(--tint) 12%, transparent), color-mix(in srgb, var(--tint) 12%, transparent)),
-    var(--paper);
-  box-shadow: var(--paste-shadow);
+  border-radius: 20px;
 }
-/* The older posters underneath (z -1 puts them behind this poster, inside the section). */
 .venue-panel::before,
 .venue-panel::after {
-  content: "";
+  content: none;
   position: absolute;
   z-index: -1;
-  border-radius: 4px;
   pointer-events: none;
-  box-shadow: var(--paste-shadow);
-}
-/* Halftone poster, sticking out at the top left. */
-.venue-panel::before {
-  top: -16px;
-  left: -10px;
-  width: 46%;
-  height: 58%;
-  rotate: -2.4deg;
-  background:
-    radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
-    var(--back-a);
-}
-/* Striped poster, sticking out at the bottom right. */
-.venue-panel::after {
-  right: -12px;
-  bottom: -16px;
-  width: 38%;
-  height: 52%;
-  rotate: 1.9deg;
-  background:
-    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-line) 18%, transparent) 0 6px, transparent 6px 16px),
-    var(--back-b);
 }
 .tint-lime {
   --tint: var(--color-lime);
@@ -747,49 +720,197 @@ body {
   --back-a: var(--color-lime);
   --back-b: var(--color-coral);
 }
-.tint-blue::before {
-  left: auto;
-  right: -12px;
-  rotate: 2.2deg;
-}
-.tint-blue::after {
-  right: auto;
-  left: -14px;
-  rotate: -1.6deg;
-}
 .tint-sun {
   --tint: var(--color-sun);
   --back-a: var(--color-coral);
   --back-b: var(--color-violet);
-}
-.tint-sun::before {
-  top: 30%;
-  left: -14px;
-  height: 46%;
-  rotate: -3deg;
 }
 .tint-coral {
   --tint: var(--color-coral);
   --back-a: var(--color-sky);
   --back-b: var(--color-lime);
 }
+
+/* Riso card: paper, an ink outline and a hard offset shadow, like the app's own cards. */
+:root[data-bg="riso"] .venue-panel {
+  background:
+    linear-gradient(color-mix(in srgb, var(--tint) 10%, transparent), color-mix(in srgb, var(--tint) 10%, transparent)),
+    var(--paper);
+  border: 2.5px solid var(--riso-line);
+  box-shadow: 8px 8px 0 0 color-mix(in srgb, var(--tint) 70%, var(--ink-2));
+}
+:root[data-bg="riso"]:not([data-theme="light"]) .venue-panel {
+  border-color: color-mix(in srgb, var(--color-fg) 55%, transparent);
+}
+
+/* Misprint: no fill, a pink and a blue outline printed slightly off-register. */
+:root[data-bg="misprint"] .venue-panel::before,
+:root[data-bg="misprint"] .venue-panel::after {
+  content: "";
+  inset: 0;
+  border-radius: inherit;
+}
+:root[data-bg="misprint"] .venue-panel::before {
+  border: 3px solid var(--color-lime);
+  translate: 7px 6px;
+}
+:root[data-bg="misprint"] .venue-panel::after {
+  border: 3px solid var(--ink-2);
+}
+
+/* Road case: a flight case with metal corners and a double edge. */
+:root[data-bg="roadcase"] .venue-panel {
+  border-radius: 10px;
+  background:
+    linear-gradient(var(--metal), var(--metal)) 0 0 / 26px 26px no-repeat,
+    linear-gradient(var(--metal), var(--metal)) 100% 0 / 26px 26px no-repeat,
+    linear-gradient(var(--metal), var(--metal)) 0 100% / 26px 26px no-repeat,
+    linear-gradient(var(--metal), var(--metal)) 100% 100% / 26px 26px no-repeat,
+    linear-gradient(color-mix(in srgb, var(--tint) 8%, transparent), color-mix(in srgb, var(--tint) 8%, transparent)),
+    var(--case);
+  border: 3px solid var(--case-edge);
+  box-shadow:
+    inset 0 0 0 7px var(--case),
+    inset 0 0 0 9px color-mix(in srgb, var(--case-edge) 60%, transparent),
+    0 10px 0 -2px color-mix(in srgb, var(--case-edge) 45%, transparent);
+}
+
+/* Ticket: punched notches on both sides and a dashed perforation, drawn on the pseudo-elements so nothing inside is
+   clipped. */
+:root[data-bg="ticket"] .venue-panel::before {
+  content: "";
+  inset: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--tint) 30%, transparent), color-mix(in srgb, var(--tint) 30%, transparent)),
+    var(--paper);
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent 22px, #000 22.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 22px, #000 22.5px) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 50%, transparent 22px, #000 22.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 22px, #000 22.5px) right / 51% 100% no-repeat;
+}
+:root[data-bg="ticket"] .venue-panel::after {
+  content: "";
+  inset: 12px 34px;
+  border: 2px dashed color-mix(in srgb, var(--color-fg) 30%, transparent);
+  border-radius: 8px;
+}
+
+/* Valance: full-width bands with a scalloped curtain edge hanging along the top. */
+:root[data-bg="valance"] main > section {
+  padding-left: 0;
+  padding-right: 0;
+}
+:root[data-bg="valance"] .venue-panel {
+  max-width: none;
+  border-radius: 0;
+  padding-top: clamp(40px, 5vw, 64px);
+  background:
+    linear-gradient(color-mix(in srgb, var(--tint) 14%, transparent), color-mix(in srgb, var(--tint) 14%, transparent)),
+    var(--paper);
+}
+:root[data-bg="valance"] .venue-panel::before {
+  content: "";
+  inset: 0 0 auto;
+  height: 26px;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0, var(--tint) 13px, transparent 13.5px) 0 0 / 30px 26px repeat-x;
+}
+
+/* Torn paper: a ragged sheet drawn on ::before. */
+:root[data-bg="torn"] .venue-panel::before {
+  content: "";
+  inset: -6px 0;
+  background:
+    linear-gradient(color-mix(in srgb, var(--tint) 16%, transparent), color-mix(in srgb, var(--tint) 16%, transparent)),
+    var(--paper);
+  clip-path: polygon(0 1.5%, 4% 0, 9% 1.2%, 15% 0.2%, 22% 1.4%, 28% 0.3%, 35% 1.1%, 41% 0, 48% 1.3%, 55% 0.2%, 61% 1.2%, 68% 0.1%, 75% 1.4%, 81% 0.3%, 88% 1.2%, 94% 0, 100% 1.1%, 100% 98.6%, 96% 100%, 90% 98.8%, 84% 99.8%, 77% 98.6%, 70% 99.7%, 63% 98.9%, 56% 100%, 49% 98.7%, 42% 99.8%, 35% 98.8%, 28% 100%, 21% 98.7%, 14% 99.8%, 7% 98.9%, 0 99.6%);
+}
+
+/* Poster wall: paper taped at the top with two older posters peeking out behind. */
+:root[data-bg="poster"] {
+  --wall: #160b1b;
+}
+:root[data-bg="poster"][data-theme="light"] {
+  --wall: #e3d6bf;
+}
+:root[data-bg="poster"] .venue-panel {
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--tape), var(--tape)) 28px 0 / 92px 20px no-repeat,
+    linear-gradient(var(--tape), var(--tape)) calc(100% - 28px) 0 / 92px 20px no-repeat,
+    linear-gradient(color-mix(in srgb, var(--tint) 12%, transparent), color-mix(in srgb, var(--tint) 12%, transparent)),
+    var(--paper);
+  box-shadow: var(--paste-shadow);
+}
+:root[data-bg="poster"] .venue-panel::before,
+:root[data-bg="poster"] .venue-panel::after {
+  content: "";
+  border-radius: 4px;
+  box-shadow: var(--paste-shadow);
+}
+:root[data-bg="poster"] .venue-panel::before {
+  top: -16px;
+  left: -10px;
+  width: 46%;
+  height: 58%;
+  rotate: -2.4deg;
+  background:
+    radial-gradient(color-mix(in srgb, var(--riso-line) 35%, transparent) 1.6px, transparent 2px) 0 0 / 9px 9px,
+    var(--back-a);
+}
+:root[data-bg="poster"] .venue-panel::after {
+  right: -12px;
+  bottom: -16px;
+  width: 38%;
+  height: 52%;
+  rotate: 1.9deg;
+  background:
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-line) 18%, transparent) 0 6px, transparent 6px 16px),
+    var(--back-b);
+}
+
+/* Dev-only switcher for the section frames. */
+.bg-switcher {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  translate: -50% 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 24px);
+  padding: 6px;
+  border-radius: 999px;
+  background: #1d1023;
+  color: #ffe4ef;
+  box-shadow: 4px 4px 0 0 var(--color-lime);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.bg-switcher span {
+  padding: 0 8px;
+  color: #ffd23f;
+}
+.bg-switcher button {
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.bg-switcher button:hover {
+  background: rgba(255, 228, 239, 0.14);
+}
+.bg-switcher button[aria-pressed="true"] {
+  background: #ff6fb5;
+  color: #1d1023;
+}
 @media (max-width: 640px) {
-  .venue-panel::before {
-    top: -10px;
-    left: -6px;
-  }
-  .venue-panel::after {
-    right: -6px;
-    bottom: -10px;
-  }
-  .tint-blue::before {
-    right: -6px;
-  }
-  .tint-blue::after {
-    left: -6px;
-  }
-  .tint-sun::before {
-    left: -6px;
+  .bg-switcher {
+    border-radius: 16px;
   }
 }
 
