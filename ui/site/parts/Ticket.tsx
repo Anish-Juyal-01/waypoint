@@ -1,6 +1,6 @@
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
 import { useState } from "react";
-import { Wordmark } from "../../src/components/Wordmark";
+import { Wordmark } from "./Wordmark";
 import { DOWNLOAD, INSTALL_GUIDE, REPO } from "./acts";
 
 /**
@@ -35,7 +35,7 @@ export function Ticket() {
       <div className="ticket mt-12">
         <div className="ticket-main">
           <div className="ticket-dots" aria-hidden />
-          <Wordmark />
+          <Wordmark size={42} bare />
           <p className="mt-3 font-display text-[clamp(1.2rem,2.4vw,1.6rem)] font-extrabold leading-tight">Live on your desktop, every night.</p>
           <dl className="ticket-facts">
             <div>

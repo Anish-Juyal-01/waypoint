@@ -1,13 +1,12 @@
 import { MotionConfig } from "motion/react";
 import { useEffect, useState } from "react";
 import { Download, Moon, Sun } from "lucide-react";
-import { Wordmark } from "../src/components/Wordmark";
+import { Wordmark } from "./parts/Wordmark";
 import { DOWNLOAD, INSTALL_GUIDE, REPO } from "./parts/acts";
 import { Gig } from "./parts/Gig";
 import { Hero } from "./parts/Hero";
 import { Showtime } from "./parts/Showtime";
 import { Ticket } from "./parts/Ticket";
-import { pushLevel } from "./stubs/store";
 
 type Theme = "light" | "dark";
 const KEY = "waypoint-site-theme";
@@ -84,23 +83,8 @@ function FrameSwitcher() {
   );
 }
 
-/** A steady fake beat so the masthead letters bob like they do in the app. */
-function useBeat() {
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const start = performance.now();
-    const id = window.setInterval(() => {
-      const t = (performance.now() - start) / 1000;
-      const kick = Math.max(0, Math.sin(t * Math.PI * 2 * 1.9)) ** 6;
-      pushLevel("output", 0.05 + kick * 0.35);
-    }, 50);
-    return () => window.clearInterval(id);
-  }, []);
-}
-
 export function App() {
   const { theme, toggle } = useTheme();
-  useBeat();
 
   return (
     <MotionConfig reducedMotion="user">
@@ -109,7 +93,7 @@ export function App() {
 
       <header className="masthead">
         <a href="#top" className="shrink-0" aria-label="Waypoint, back to top">
-          <Wordmark />
+          <Wordmark size={24} />
         </a>
         <nav className="flex items-center gap-2 sm:gap-3">
           <button type="button" className="icon-btn icon-btn-lg" onClick={toggle} aria-label={theme === "light" ? "Use dark theme" : "Use light theme"}>
@@ -135,7 +119,7 @@ export function App() {
 
       <footer className="relative z-[1] mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-6 pt-8 pb-12 md:flex-row md:items-end md:justify-between md:px-12">
         <div>
-          <Wordmark />
+          <Wordmark size={30} />
           <p className="mt-3 max-w-[40ch] text-[0.95rem] text-fg-3">Ranks your audio devices so Windows always plays on the best one connected.</p>
         </div>
         <div className="flex flex-col gap-1 font-mono text-[13px] text-fg-2 md:items-end">

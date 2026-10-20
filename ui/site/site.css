@@ -50,9 +50,6 @@ button {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-.masthead .wordmark {
-  font-size: 28px;
-}
 
 /* ── Buttons: ink slab with a misregistered blue plate behind it ── */
 .btn-ink,
@@ -562,14 +559,6 @@ button {
   -webkit-mask: radial-gradient(circle at 100% 50%, transparent 13px, #000 13.5px);
   mask: radial-gradient(circle at 100% 50%, transparent 13px, #000 13.5px);
   overflow: hidden;
-}
-.ticket-main .wordmark {
-  font-size: clamp(30px, 4.4vw, 44px);
-}
-.ticket-main .wm-letter,
-.ticket-main .wm-drop:nth-child(odd) .wm-letter {
-  color: #1d1023;
-  text-shadow: 0.06em 0.05em 0 rgba(255, 79, 154, 0.6);
 }
 .ticket-dots {
   position: absolute;
@@ -1302,6 +1291,62 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .on-air {
+    animation: none;
+  }
+}
+
+/* ── Wordmark: plum letters, pink shadow, sunflower badge; each letter sways on its own beat ── */
+.wordmark-m {
+  display: inline-flex;
+  align-items: flex-end;
+  padding: 0.12em 0.38em 0.18em;
+  border-radius: 0.32em;
+  background: #ffd23f;
+  rotate: -2deg;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transition: rotate 380ms var(--ease-spring), scale 380ms var(--ease-spring);
+}
+.wordmark-m.is-bare {
+  padding: 0;
+  background: none;
+  rotate: none;
+}
+.wmm-drop {
+  display: inline-block;
+  animation: wm-drop 0.8s var(--ease-spring) calc(var(--i) * 70ms + 150ms) both;
+}
+.wmm-letter {
+  display: inline-block;
+  color: #1d1023;
+  text-shadow: 0.07em 0.07em 0 #ff4f9a;
+  transform-origin: 50% 90%;
+  animation: wmm-sway 1.8s ease-in-out calc(var(--i) * -0.22s) infinite;
+}
+@keyframes wmm-sway {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg) translateY(-0.06em);
+  }
+}
+a:hover > .wordmark-m,
+.wordmark-m:hover {
+  rotate: 2deg;
+  scale: 1.06;
+}
+a:hover > .wordmark-m .wmm-letter,
+.wordmark-m:hover .wmm-letter {
+  animation-duration: 0.7s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wmm-drop,
+  .wmm-letter {
     animation: none;
   }
 }
