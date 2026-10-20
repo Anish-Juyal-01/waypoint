@@ -10,6 +10,26 @@ const BOARD = "WAYPOINT".split("");
 const CAST = Object.keys(CRITTERS) as CritterName[];
 const title = (n: CritterName) => n[0].toUpperCase() + n.slice(1);
 
+const shuffle = <T,>(list: readonly T[]) => {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+const SOBS = ["our stage!", "we were next...", "come back!", "it's gone", "not fair", "we had a whole set"];
+
+/**
+ * Who's where in the hero, shuffled on every visit: one star peeking through the curtain, three pals under its hem,
+ * and three left behind in the empty slot when the front falls. Nobody appears twice.
+ */
+function castTheNight() {
+  const [star, ...rest] = shuffle(CAST);
+  return { star, hem: rest.slice(0, 3), behind: rest.slice(3, 6), lines: shuffle(SOBS).slice(0, 3) };
+}
+
 /** The headline's last word rolls through these. */
 const DEVICE_WORDS = ["headphones", "earbuds", "speakers", "headset"];
 
@@ -34,7 +54,6 @@ function RollingHeadline() {
           <motion.span
             key={word}
             className="roll-word"
-            data-ink={i % 3}
             initial={{ y: "90%", opacity: 0, rotate: 4 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
             exit={{ y: "-90%", opacity: 0, rotate: -4 }}
@@ -69,14 +88,21 @@ export function Hero() {
   const [falling, setFalling] = useState(false);
   useMotionValueEvent(fall, "change", (p) => setFalling(p > 0.06));
 
-  const [star, setStar] = useState<CritterName>("fox");
+  const [cast, setCast] = useState(castTheNight);
+  const { star, hem, behind, lines } = cast;
   const [hover, setHover] = useState<CritterName | null>(null);
   const [cheer, setCheer] = useState(false);
   const cheerTimer = useRef(0);
   useEffect(() => () => window.clearTimeout(cheerTimer.current), []);
 
+  // Picking a pal who's already under the hem or left behind swaps them with the current star, so nobody's doubled.
   const pick = (n: CritterName) => {
-    setStar(n);
+    setCast((c) => ({
+      ...c,
+      star: n,
+      hem: c.hem.map((h) => (h === n ? c.star : h)),
+      behind: c.behind.map((b) => (b === n ? c.star : b)),
+    }));
     setCheer(true);
     window.clearTimeout(cheerTimer.current);
     cheerTimer.current = window.setTimeout(() => setCheer(false), 1800);
@@ -130,13 +156,7 @@ export function Hero() {
         {/* Etched into the card where the venue front stands; it only shows once the front has fallen away. */}
         <div className="etched-slot" aria-hidden>
           <motion.div className="etched-slot-fill" style={{ opacity: slot }}>
-            <LeftBehind
-              pals={[
-                { name: "puff", says: "our stage!" },
-                { name: "chick", says: "we were next..." },
-                { name: "radish", says: "come back!" },
-              ]}
-            />
+            <LeftBehind pals={behind.map((name, i) => ({ name, says: lines[i] }))} />
           </motion.div>
         </div>
         <motion.div
@@ -183,6 +203,7 @@ export function Hero() {
               {falling ? <span className="amp-bubble">whoa whoa whoa</span> : cheer ? <span className="amp-bubble">my turn!</span> : null}
               <motion.span
                 key={star}
+                data-pal={star}
                 className="inline-block"
                 initial={{ y: 40, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -192,9 +213,11 @@ export function Hero() {
               </motion.span>
             </div>
             <div className={`peek-hem ${falling ? "is-falling" : ""}`}>
-              <Critter name="beepo" clip={band} scale={4} />
-              <Critter name="bun" clip={band} scale={4} />
-              <Critter name="sprout" clip={band} scale={4} />
+              {hem.map((n) => (
+                <span key={n} data-pal={n}>
+                  <Critter name={n} clip={band} scale={4} />
+                </span>
+              ))}
             </div>
           </div>
         </motion.div>

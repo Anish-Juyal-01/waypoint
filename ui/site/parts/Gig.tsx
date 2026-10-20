@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { ACTS, act, type ActId } from "./acts";
+import { CRITTERS, type CritterName } from "../../src/pals/data";
 import { LeftBehind } from "./LeftBehind";
 import { Stage, type OnStage } from "./Stage";
 
@@ -63,6 +64,18 @@ const BEATS: Beat[] = [
  * The hook: a pinned stage that plays a short gig as you scroll. Amps (devices) roll on, the spotlight only moves to
  * one that outranks whoever's playing, and when the headliner's battery dies it falls back down the setlist.
  */
+/** Two pals left behind in the gig's empty slot, shuffled each visit and never one of the band on its stage. */
+function pickLeftBehind() {
+  const band = new Set<string>(ACTS.map((a) => a.pal));
+  const free = (Object.keys(CRITTERS) as CritterName[]).filter((n) => !band.has(n));
+  for (let i = free.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [free[i], free[j]] = [free[j], free[i]];
+  }
+  const lines = Math.random() < 0.5 ? ["it's gone...", "we didn't even play"] : ["where'd it go?", "that was our slot"];
+  return free.slice(0, 2).map((name, i) => ({ name, says: lines[i] }));
+}
+
 /** One screen of scrolling per beat, plus one at the end where the stage falls through the floor. */
 const UNITS = BEATS.length + 1;
 
@@ -70,6 +83,7 @@ export function Gig() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [beat, setBeat] = useState(0);
+  const [leftBehind] = useState(pickLeftBehind);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const beats = useTransform(scrollYProgress, (p) => Math.min(1, (p * UNITS) / BEATS.length));
   const progress = useSpring(beats, { stiffness: 140, damping: 30 });
@@ -111,12 +125,7 @@ export function Gig() {
           <div className="relative z-[1] order-1 mx-auto w-full max-w-[max(260px,calc((100dvh-400px)*1.45))] lg:order-2 lg:max-w-none">
             <div className="relative">
               <motion.div aria-hidden className="stage-ghost" style={{ opacity: ghost }}>
-                <LeftBehind
-                  pals={[
-                    { name: "shroom", says: "it's gone..." },
-                    { name: "slime", says: "we didn't even play" },
-                  ]}
-                />
+                <LeftBehind pals={leftBehind} />
               </motion.div>
               <motion.div className="pointer-events-none" style={{ y: fallY, rotate: fallRotate, opacity: fallOpacity, transformOrigin: "30% 100%" }}>
                 <Stage acts={b.on} lit={b.lit} curtain={curtain} panic={falling ? "falling" : undefined} />

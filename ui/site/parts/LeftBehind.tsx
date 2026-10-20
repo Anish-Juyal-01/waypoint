@@ -9,7 +9,7 @@ export function LeftBehind({ pals, scale = 4 }: { pals: { name: CritterName; say
   return (
     <div className="left-behind" aria-hidden>
       {pals.map((p, i) => (
-        <div key={p.name} className="lb-pal" style={{ "--i": i } as React.CSSProperties}>
+        <div key={p.name} className="lb-pal" data-pal={p.name} style={{ "--i": i } as React.CSSProperties}>
           <span className="amp-bubble lb-says">{p.says}</span>
           <span className="lb-sob">
             <Critter name={p.name} clip="worried" scale={scale} blink={false} />

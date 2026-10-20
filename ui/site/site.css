@@ -1438,18 +1438,40 @@ body {
   margin-bottom: -0.12em;
 }
 .roll-word {
+  position: relative;
   display: inline-block;
   transform-origin: 0 100%;
   color: var(--color-tx-lime);
   text-shadow: 0.05em 0.05em 0 color-mix(in srgb, var(--ink-2) 45%, transparent);
 }
-.roll-word[data-ink="1"] {
-  color: var(--color-tx-violet);
-  text-shadow: 0.05em 0.05em 0 var(--shift-ink);
+/* A sunflower highlighter stroke that wipes in under each new word. */
+.roll-word::before {
+  content: "";
+  position: absolute;
+  left: -0.06em;
+  right: 0.1em;
+  bottom: 0.1em;
+  height: 0.42em;
+  z-index: -1;
+  border-radius: 0.12em 0.3em 0.16em 0.26em;
+  background: var(--color-sun);
+  opacity: 0.85;
+  rotate: -1.2deg;
+  transform-origin: left;
+  animation: hl-wipe 0.55s var(--ease-out-expo) 0.15s both;
 }
-.roll-word[data-ink="2"] {
-  color: var(--color-tx-coral);
-  text-shadow: 0.05em 0.05em 0 color-mix(in srgb, var(--color-sun) 60%, transparent);
+:root:not([data-theme="light"]) .roll-word::before {
+  opacity: 0.35;
+}
+@keyframes hl-wipe {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roll-word::before {
+    animation: none;
+  }
 }
 /* A blinking on-air light in the stamp. */
 .on-air {
@@ -1579,10 +1601,10 @@ a:hover > .wordmark-m .wmm-letter,
   border: 3px dashed var(--line-strong);
   background: radial-gradient(var(--line) 1.2px, transparent 1.6px) 0 0 / 12px 12px;
   display: flex;
-  /* top of the slot: the falling front uncovers it first */
-  align-items: flex-start;
+  /* a little below the middle: still on screen while the hero scrolls away, and uncovered as the front drops */
+  align-items: center;
   justify-content: center;
-  padding-top: 26px;
+  padding-top: 14%;
 }
 .stage-ghost {
   display: flex;
