@@ -23,6 +23,7 @@
 | `src/Waypoint.Cli` | `waypoint-cli` diagnostics built on Core. |
 | `tests/Waypoint.Core.Tests` | xUnit tests with a fake audio system and a deterministic scheduler. |
 | `ui/` | React 19 + TypeScript + Vite, Tailwind CSS v4 tokens, Motion, dnd-kit, Radix primitives, Zustand. |
+| `ui/site` | The marketing website (separate Vite entry, `vite.site.config.ts`). Reuses the pals and riso styles; a build alias swaps the app store for `site/stubs/store.ts`, so no Windows bridge code ships with it. Builds to `ui/dist-site`. |
 
 ## Audio layer (`Core/Audio`)
 

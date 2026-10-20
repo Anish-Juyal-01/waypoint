@@ -77,6 +77,21 @@ dotnet run --project src/Waypoint.App -p:SkipUiBuild=true   # terminal 2
 Opening `http://localhost:5173` in a normal browser shows the UI with **sample data** (clearly bannered as a preview);
 it is only for design work and is never used inside the app.
 
+### Website
+
+The landing page lives in `ui/site`. It reuses the app's pixel pals and riso styles, but nothing from it ships
+inside `Waypoint.exe`.
+
+```powershell
+cd ui
+npm run dev:site            # http://localhost:5176 with hot reload
+npm run build:site          # static site in ui/dist-site
+```
+
+To host it on Vercel, import the repo and set the project's root directory to `ui`. `ui/vercel.json` has the build
+settings. The site's download buttons point at `releases/latest/download/Waypoint.exe`, so every release needs an
+asset named exactly `Waypoint.exe` alongside the zips.
+
 ### Tests
 
 ```powershell
