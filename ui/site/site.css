@@ -544,7 +544,7 @@ button {
 .poster {
   position: relative;
   padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 56px);
-  border-radius: 10px;
+  border-radius: 30px;
   background:
     radial-gradient(color-mix(in srgb, var(--color-lime) 22%, transparent) 1.4px, transparent 1.8px) 0 0 / 12px 12px,
     var(--color-ink-800);
@@ -696,6 +696,228 @@ button {
   }
   .amp-eq i,
   .amp[data-state="lit"] .amp-grille {
+    animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Venue panels: every section sits inside a printed panel (a tint
+   of one ink) with a halftone disc and an ink disc overprinting in
+   one corner, so nothing floats loose on the page.
+   ══════════════════════════════════════════════════════════════ */
+.venue-panel {
+  --tint: var(--color-lime);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 30px;
+  background: color-mix(in srgb, var(--tint) 11%, var(--color-ink-900));
+}
+.venue-panel::before,
+.venue-panel::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Halftone disc, top right. */
+.venue-panel::before {
+  top: -120px;
+  right: -90px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(color-mix(in srgb, var(--tint) 55%, transparent) 2.4px, transparent 2.9px) 0 0 / 9px 9px;
+  -webkit-mask: radial-gradient(closest-side, #000 55%, transparent);
+  mask: radial-gradient(closest-side, #000 55%, transparent);
+}
+/* Solid ink disc, bottom left, misregistered against the dots. */
+.venue-panel::after {
+  bottom: -150px;
+  left: -110px;
+  width: 300px;
+  height: 300px;
+  background: color-mix(in srgb, var(--tint) 22%, transparent);
+}
+.tint-lime {
+  --tint: var(--color-lime);
+}
+.tint-blue {
+  --tint: var(--color-violet);
+}
+.tint-sun {
+  --tint: var(--color-sun);
+}
+.tint-coral {
+  --tint: var(--color-coral);
+}
+:root[data-theme="light"] .venue-panel {
+  background: color-mix(in srgb, var(--tint) 13%, var(--color-ink-800));
+}
+.tint-blue::after {
+  left: auto;
+  right: -120px;
+}
+
+/* ── Hero: the marquee sign ── */
+.marquee-sign {
+  position: relative;
+  padding: 22px;
+  border-radius: 18px;
+  background: var(--color-lime);
+  border: 3px solid var(--riso-line);
+  box-shadow: 6px 6px 0 0 var(--ink-2);
+  rotate: -1.5deg;
+}
+/* Two rings of bulbs that blink in turn, chasing around the sign. */
+.bulbs,
+.bulbs::after {
+  position: absolute;
+  inset: 8px;
+  border-radius: 12px;
+  pointer-events: none;
+  --bulb: radial-gradient(circle, #fff6c2 0 3.2px, #ffd23f 3.6px 4.4px, transparent 4.9px);
+  background:
+    var(--bulb) 0 0 / 22px 22px repeat-x,
+    var(--bulb) 0 100% / 22px 22px repeat-x;
+  animation: bulbs 0.9s steps(1) infinite;
+}
+.bulbs::after {
+  content: "";
+  inset: 0;
+  background-position: 11px 0, 11px 100%;
+  animation-delay: -0.45s;
+}
+@keyframes bulbs {
+  50% {
+    opacity: 0.25;
+  }
+}
+.letterboard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 14px;
+  border-radius: 10px;
+  background: #1d1023;
+  color: #ffe4ef;
+}
+.lb-small {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.2vw, 13px);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #ffd23f;
+}
+.lb-big {
+  display: flex;
+  gap: clamp(3px, 0.6vw, 6px);
+}
+.lb-tile {
+  display: grid;
+  place-items: center;
+  width: clamp(30px, 4.6vw, 52px);
+  aspect-ratio: 0.82;
+  border-radius: 5px;
+  background: #fdf9f1;
+  color: #1d1023;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(20px, 3.4vw, 38px);
+  line-height: 1;
+  box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.35);
+}
+.lb-tile:nth-child(odd) {
+  color: #e0207a;
+}
+
+/* ── Closed curtains (the venue front, and the stage before the show) ── */
+.facade {
+  position: relative;
+  height: clamp(170px, 24vw, 270px);
+  margin: -6px 18px 0;
+  border-radius: 0 0 18px 18px;
+  overflow: hidden;
+  background: #150a1a;
+}
+.curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 51%;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 22%),
+    repeating-linear-gradient(90deg, #e0207a 0 10px, #ff4f9a 10px 22px, #c8105a 22px 30px);
+  box-shadow: inset 0 -10px 0 0 #9c0c48;
+}
+.curtain-l {
+  left: 0;
+  transform-origin: 0 50%;
+  border-radius: 0 0 40% 0 / 0 0 14% 0;
+}
+.curtain-r {
+  right: 0;
+  transform-origin: 100% 50%;
+  border-radius: 0 0 0 40% / 0 0 0 14%;
+}
+.peek-split {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  translate: -50% 0;
+  z-index: 2;
+  animation: peek 4.5s ease-in-out infinite;
+}
+@keyframes peek {
+  0%,
+  100% {
+    translate: -50% 0;
+    rotate: 0deg;
+  }
+  30% {
+    translate: -42% -6px;
+    rotate: 8deg;
+  }
+  60% {
+    translate: -58% -2px;
+    rotate: -7deg;
+  }
+}
+.peek-hem {
+  position: absolute;
+  inset: auto 0 -10px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 26%;
+}
+.peek-hem > :nth-child(2) {
+  animation: hop 2.6s ease-in-out infinite;
+}
+.peek-hem > :nth-child(3) {
+  animation: hop 3.1s ease-in-out -1.2s infinite;
+}
+@keyframes hop {
+  0%,
+  70%,
+  100% {
+    translate: 0 0;
+  }
+  80% {
+    translate: 0 -10px;
+  }
+}
+.stage-curtain {
+  z-index: 6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulbs,
+  .bulbs::after,
+  .peek-split,
+  .peek-hem > * {
     animation: none;
   }
 }

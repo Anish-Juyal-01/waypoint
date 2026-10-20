@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useMotionValue, useTransform, type MotionValue } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Critter } from "../../src/pals/Critter";
 import { act, type ActId } from "./acts";
@@ -21,9 +21,25 @@ export interface OnStage {
  * A small risograph stage: amps (devices) with a pal on each, and one spotlight that swings to whichever amp is
  * playing. Amps roll in from the nearest wing when they appear and topple off when they're unplugged.
  */
-export function Stage({ acts, lit, compact, className }: { acts: OnStage[]; lit: ActId | null; compact?: boolean; className?: string }) {
+export function Stage({
+  acts,
+  lit,
+  compact,
+  curtain,
+  className,
+}: {
+  acts: OnStage[];
+  lit: ActId | null;
+  compact?: boolean;
+  /** 0 = curtains closed, 1 = open. Without it the stage has no curtains. */
+  curtain?: MotionValue<number>;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(1.6);
+  const open = useMotionValue(1);
+  const curtainOpen = curtain ?? open;
+  const curtainScale = useTransform(curtainOpen, [0, 1], [1, 0.14]);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -72,6 +88,13 @@ export function Stage({ acts, lit, compact, className }: { acts: OnStage[]; lit:
           <AmpSlot key={a.id} {...a} lit={lit === a.id} compact={compact} />
         ))}
       </AnimatePresence>
+
+      {curtain && (
+        <>
+          <motion.div aria-hidden className="curtain curtain-l stage-curtain" style={{ scaleX: curtainScale }} />
+          <motion.div aria-hidden className="curtain curtain-r stage-curtain" style={{ scaleX: curtainScale }} />
+        </>
+      )}
     </div>
   );
 }

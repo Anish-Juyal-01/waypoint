@@ -84,9 +84,9 @@ export function HouseRules() {
   }));
 
   return (
-    <section className="mx-auto w-full max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
-      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
-        <div className="order-2 lg:order-1">
+    <section className="px-3 py-3 md:px-6">
+      <div className="venue-panel tint-coral mx-auto grid w-full max-w-[1320px] grid-cols-1 p-6 md:p-12 items-center gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
+        <div className="relative z-[1] order-2 lg:order-1">
           <Stage acts={acts} lit={lit} compact />
           <AnimatePresence mode="wait" initial={false}>
             <motion.p
@@ -103,7 +103,7 @@ export function HouseRules() {
           </AnimatePresence>
         </div>
 
-        <div className="order-1 lg:order-2">
+        <div className="relative z-[1] order-1 lg:order-2">
           <h2 className="headline max-w-[14ch] text-[clamp(2.2rem,4.6vw,3.6rem)]">Set the house rules.</h2>
           <p className="mt-4 max-w-[46ch] text-[1.05rem] leading-relaxed text-fg-2">
             Games, call apps and Windows itself love to switch the output behind your back. Pick how Waypoint answers.

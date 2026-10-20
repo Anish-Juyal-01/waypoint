@@ -36,13 +36,14 @@ export function RunningOrder() {
   const onStage = useMemo(() => order.filter((id) => plugged.has(id)).map((id) => ({ id, rank: order.indexOf(id) + 1 })), [order, plugged]);
 
   return (
-    <section id="try-it" className="mx-auto w-full max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
-      <h2 className="headline max-w-[16ch] text-[clamp(2.2rem,4.6vw,3.6rem)]">Write your own running order.</h2>
+    <section id="try-it" className="px-3 py-3 md:px-6">
+      <div className="venue-panel tint-sun mx-auto w-full max-w-[1320px] p-6 md:p-12">
+      <h2 className="headline relative z-[1] max-w-[16ch] text-[clamp(2.2rem,4.6vw,3.6rem)]">Write your own running order.</h2>
       <p className="mt-4 max-w-[52ch] text-[1.05rem] leading-relaxed text-fg-2">
         Drag the setlist into any order and pull a few plugs. The light always finds the highest act that's still here.
       </p>
 
-      <div className="mt-12 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
+      <div className="relative z-[1] mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
         <div className="paper-sheet">
           <span className="tape tape-left" aria-hidden />
           <span className="tape tape-right" aria-hidden />
@@ -75,6 +76,7 @@ export function RunningOrder() {
             )}
           </p>
         </div>
+      </div>
       </div>
     </section>
   );

@@ -24,8 +24,8 @@ const BAND: { name: CritterName; clip: string }[] = [
 
 export function Lineup() {
   return (
-    <section className="mx-auto w-full max-w-[1100px] px-4 py-20 md:px-8 md:py-28" aria-labelledby="bill-title">
-      <div className="poster">
+    <section className="px-3 py-3 md:px-6" aria-labelledby="bill-title">
+      <div className="poster mx-auto w-full max-w-[1320px]">
         <p id="bill-title" className="poster-kicker">
           Also on the bill
         </p>

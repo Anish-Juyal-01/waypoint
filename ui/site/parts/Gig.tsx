@@ -1,7 +1,6 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
-import { CodeXml, Download } from "lucide-react";
-import { ACTS, DOWNLOAD, REPO, act, type ActId } from "./acts";
+import { ACTS, act, type ActId } from "./acts";
 import { Stage, type OnStage } from "./Stage";
 
 interface Beat {
@@ -10,16 +9,21 @@ interface Beat {
   lit: ActId;
   /** Acts that have left the building (struck through on the setlist). */
   gone?: ActId[];
-  title?: string;
-  body?: string;
+  title: string;
+  body: string;
 }
 
 const rank = (id: ActId) => ACTS.findIndex((a) => a.id === id) + 1;
 const on = (id: ActId, extra: Partial<OnStage> = {}): OnStage => ({ id, rank: rank(id), ...extra });
 
-/** The gig, one beat per screen of scrolling. Beat 0 is the hero. */
+/** The gig, one beat per screen of scrolling. */
 const BEATS: Beat[] = [
-  { on: [on("laptop")], lit: "laptop" },
+  {
+    on: [on("laptop")],
+    lit: "laptop",
+    title: "Doors open.",
+    body: "Laptop speakers are the only act in the building, so they play. They're #4 on your list.",
+  },
   {
     on: [on("laptop"), on("desk", { says: "check, check" })],
     lit: "desk",
@@ -69,21 +73,25 @@ export function Gig() {
     setBeat((b) => (b === next ? b : next));
   });
 
+  // The curtains part as the venue slides up into place, before the first beat.
+  const { scrollYProgress: entering } = useScroll({ target: ref, offset: ["start end", "start start"] });
+  const curtain = useTransform(entering, [0.45, 1], [0, 1], { clamp: true });
+
   const b = BEATS[beat];
   return (
-    <section ref={ref} className="relative" style={{ height: `${BEATS.length * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
-      <div className="sticky top-0 flex min-h-[100dvh] items-center overflow-hidden">
-        <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-6 px-4 pt-[76px] pb-6 md:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
-          <div className="order-2 min-h-[220px] lg:order-1 lg:min-h-[520px]">
+    <section ref={ref} className="relative px-3 md:px-6" style={{ height: `${BEATS.length * 100 + 40}dvh` }} aria-label="How Waypoint picks what plays">
+      <div className="sticky top-[76px] flex h-[calc(100dvh-88px)] items-stretch">
+        <div className="venue-panel tint-blue mx-auto grid w-full max-w-[1320px] grid-cols-1 content-center items-center gap-5 p-4 md:p-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-10 lg:p-10">
+          <div className="relative z-[1] order-2 min-h-[190px] lg:order-1 lg:min-h-[480px]">
             <AnimatePresence mode="wait" initial={false}>
-              {beat === 0 ? <Hero key="hero" /> : <Caption key={beat} beat={b} index={beat} />}
+              <Caption key={beat} beat={b} index={beat} />
             </AnimatePresence>
           </div>
 
           {/* Below the two-column layout the stage shares the pinned screen with the caption, so its width is capped
               by the screen height. */}
-          <div className="order-1 mx-auto w-full max-w-[max(280px,calc((100dvh-380px)*1.5))] lg:order-2 lg:max-w-none">
-            <Stage acts={b.on} lit={b.lit} />
+          <div className="relative z-[1] order-1 mx-auto w-full max-w-[max(260px,calc((100dvh-400px)*1.45))] lg:order-2 lg:max-w-none">
+            <Stage acts={b.on} lit={b.lit} curtain={curtain} />
             <div className="mt-3 flex items-center gap-3" aria-hidden>
               <div className="gig-rail">
                 <motion.span style={{ scaleX: progress }} />
@@ -94,27 +102,6 @@ export function Gig() {
         </div>
       </div>
     </section>
-  );
-}
-
-function Hero() {
-  return (
-    <motion.div exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.2 }} className="flex flex-col justify-center lg:min-h-[520px]">
-      <h1 className="headline text-[clamp(2.5rem,6vw,4.75rem)]">Only the headliner plays.</h1>
-      <p className="mt-5 max-w-[42ch] text-[clamp(1rem,1.4vw,1.15rem)] leading-relaxed text-fg-2">
-        Waypoint ranks your headphones, earbuds and speakers. Windows always plays on the best one that's connected.
-      </p>
-      <div className="mt-7 flex flex-wrap items-center gap-3">
-        <a href={DOWNLOAD} className="btn-ink">
-          <Download size={17} strokeWidth={2.4} />
-          Download for Windows
-        </a>
-        <a href={REPO} className="btn-ghost">
-          <CodeXml size={17} strokeWidth={2.2} />
-          View the code
-        </a>
-      </div>
-    </motion.div>
   );
 }
 

@@ -4,6 +4,7 @@ import { Download, Moon, Sun } from "lucide-react";
 import { Wordmark } from "../src/components/Wordmark";
 import { DOWNLOAD, INSTALL_GUIDE, REPO } from "./parts/acts";
 import { Gig } from "./parts/Gig";
+import { Hero } from "./parts/Hero";
 import { HouseRules } from "./parts/HouseRules";
 import { Lineup } from "./parts/Lineup";
 import { RunningOrder } from "./parts/RunningOrder";
@@ -93,6 +94,7 @@ export function App() {
       </header>
 
       <main id="top" className="relative z-[1]">
+        <Hero />
         <Gig />
         <RunningOrder />
         <HouseRules />
@@ -100,7 +102,7 @@ export function App() {
         <Ticket />
       </main>
 
-      <footer className="relative z-[1] mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-4 pt-10 pb-14 md:flex-row md:items-end md:justify-between md:px-8">
+      <footer className="relative z-[1] mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-6 pt-8 pb-12 md:flex-row md:items-end md:justify-between md:px-12">
         <div>
           <Wordmark />
           <p className="mt-3 max-w-[40ch] text-[0.95rem] text-fg-3">Ranks your audio devices so Windows always plays on the best one connected.</p>

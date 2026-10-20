@@ -25,7 +25,8 @@ export function Ticket() {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-[1100px] flex-col items-center px-4 py-24 md:px-8 md:py-32">
+    <section className="px-3 py-3 md:px-6">
+      <div className="venue-panel tint-lime mx-auto flex w-full max-w-[1320px] flex-col items-center p-6 py-14 md:p-12 md:py-20">
       <h2 className="headline text-center text-[clamp(2.4rem,5.4vw,4.2rem)]">Last call.</h2>
       <p className="mt-4 max-w-[44ch] text-center text-[1.05rem] leading-relaxed text-fg-2">
         One portable exe, no installer, no account. Unzip it, run it, rank your devices.
@@ -70,6 +71,7 @@ export function Ticket() {
         </a>
         .
       </p>
+      </div>
     </section>
   );
 }
