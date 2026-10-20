@@ -1,7 +1,9 @@
 import type { CritterName } from "../../src/pals/data";
 
 export const REPO = "https://github.com/Anish-Juyal-01/waypoint";
-export const DOWNLOAD = `${REPO}/releases/latest`;
+/** Straight to the file: GitHub serves the newest release's asset by name, as a download (no page in between). */
+export const DOWNLOAD = `${REPO}/releases/latest/download/Waypoint.exe`;
+export const RELEASES = `${REPO}/releases/latest`;
 export const INSTALL_GUIDE = `${REPO}#download-and-run`;
 
 export type ActId = "headphones" | "earbuds" | "desk" | "laptop" | "monitor";
