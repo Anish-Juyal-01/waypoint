@@ -29,7 +29,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         size === "sm" ? "h-8 rounded-[9px] px-3 text-[12.5px]" : "h-10 rounded-[11px] px-4 text-[13.5px]",
         variant === "primary" && "border-[1.6px] border-fg bg-lime text-on-accent shadow-[2px_3px_0_0_var(--ink-2)] hover:bg-lime-2",
         variant === "light" && "border-[1.6px] border-fg bg-neutral text-on-accent shadow-[2px_3px_0_0_var(--color-lime)]",
-        variant === "secondary" && "border-[1.6px] border-[var(--line-strong)] bg-ink-800 text-fg shadow-[2px_3px_0_0_var(--color-ink-600)] hover:border-fg",
+        // A paper box with an ink outline and the blue plate behind it, like the website's secondary buttons.
+        variant === "secondary" &&
+          "border-[1.6px] border-fg/75 bg-ink-750 text-fg shadow-[2px_3px_0_0_var(--ink-2)] hover:border-fg hover:shadow-[3px_4px_0_0_var(--ink-2)]",
         variant === "ghost" && "!shadow-none text-fg-2 hover:bg-fg/[0.06] hover:text-fg",
         variant === "danger" && "border-[1.6px] border-tx-coral bg-coral/10 text-tx-coral shadow-[2px_3px_0_0_var(--color-coral)] hover:bg-coral/20",
         className,

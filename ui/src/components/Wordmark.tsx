@@ -2,15 +2,13 @@ import { useEffect, useRef } from "react";
 import { subscribeLevel } from "../store/store";
 
 const LETTERS = "waypoint".split("");
-/** Each letter sits at its own slight tilt, like hand-set type. */
-const TILT = [-6, 4, -3, 6, -5, 3, -4, 7];
 
 /**
- * The masthead wordmark. Letters drop in one by one on launch, alternate pink and ink, and keep up a little wave
- * whose height follows what's actually playing (louder = bouncier, silence = a gentle sway). Hover makes them
- * jump and swap colours.
+ * The masthead wordmark: plum letters with a pink offset shadow on a sunflower badge (the same one as the website).
+ * Letters drop in one by one on launch and each sways on its own beat; the badge gives a little kick that follows
+ * what's actually playing (louder = bigger kick, silence = still).
  */
-export function Wordmark() {
+export function Wordmark({ size = 22 }: { size?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -22,11 +20,11 @@ export function Wordmark() {
     let last = -1;
     const unsubscribe = subscribeLevel("output", (v) => (level = v));
     const tick = () => {
-      smooth += (Math.sqrt(level) - smooth) * (level > smooth ? 0.3 : 0.05);
-      const amp = Math.round((1.5 + smooth * 9) * 10) / 10;
-      if (amp !== last) {
-        el.style.setProperty("--amp", `${amp}px`);
-        last = amp;
+      smooth += (Math.sqrt(level) - smooth) * (level > smooth ? 0.35 : 0.06);
+      const kick = Math.round(smooth * 100) / 100;
+      if (kick !== last) {
+        el.style.setProperty("--kick", String(kick));
+        last = kick;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -38,12 +36,10 @@ export function Wordmark() {
   }, []);
 
   return (
-    <span ref={ref} className="wordmark" aria-label="Waypoint" role="img">
+    <span ref={ref} className="wordmark-m is-live" style={{ fontSize: size }} aria-label="Waypoint" role="img">
       {LETTERS.map((ch, i) => (
-        <span key={i} aria-hidden className="wm-drop" style={{ "--i": i } as React.CSSProperties}>
-          <span className="wm-letter" style={{ "--r": `${TILT[i]}deg`, "--i": i } as React.CSSProperties}>
-            {ch}
-          </span>
+        <span key={i} aria-hidden className="wmm-drop" style={{ "--i": i } as React.CSSProperties}>
+          <span className="wmm-letter">{ch}</span>
         </span>
       ))}
     </span>

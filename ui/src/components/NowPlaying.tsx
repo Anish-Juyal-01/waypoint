@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Bluetooth, Cable, Monitor, RotateCcw, Usb } from "lucide-react";
-import { useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Flow, SwitchMode } from "../bridge/protocol";
 import { Critter } from "../pals/Critter";
 import type { CritterName } from "../pals/data";
@@ -105,6 +105,21 @@ export function NowPlayingCard({ flow }: { flow: Flow }) {
   const canRestore = snapshot.canSwitch && (override !== null || (priorityTop && current?.id !== priorityTop.id));
   const title = name?.primary ?? `No ${text.noun}`;
 
+  // When the device that was playing disappears (unplugged, battery died), the pal sobs for a moment.
+  const [crying, setCrying] = useState(false);
+  const previous = useRef(current?.id ?? null);
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = current?.id ?? null;
+    if (!before || before === current?.id) return;
+    const gone = f.devices.find((d) => d.id === before);
+    if (gone && gone.state === "active") return;
+    setCrying(true);
+    const t = window.setTimeout(() => setCrying(false), 2600);
+    return () => window.clearTimeout(t);
+    // Only a change of device matters here; the device list is read at that moment.
+  }, [current?.id]);
+
   return (
     <section aria-labelledby={`now-${flow}`} className="np-panel grid grid-cols-[230px_minmax(0,1fr)] items-center gap-x-6 gap-y-4 p-5 max-[860px]:grid-cols-1">
       {/* Art: two plates + the pal */}
@@ -116,7 +131,7 @@ export function NowPlayingCard({ flow }: { flow: Flow }) {
           {flow === "input" ? (
             <MicChoir muted={muted} absent={!current} scale={9} />
           ) : (
-            <Pal flow={flow} scale={8} hopKey={current?.id ?? null} muted={muted} absent={!current} />
+            <Pal flow={flow} scale={8} hopKey={current?.id ?? null} muted={muted} absent={!current} crying={crying} />
           )}
         </div>
       </div>

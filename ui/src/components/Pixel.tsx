@@ -212,7 +212,8 @@ const SLEEP_AFTER_MS = 12_000;
 /**
  * Waypoint's resident pixel creature. It reacts to the real audio level of its flow:
  * bobs to the beat while sound plays, dozes off after a stretch of silence, zips its mouth when muted,
- * looks sad when there's no device, and does a startled hop whenever `hopKey` changes (a switch).
+ * looks sad when there's no device, and does a startled hop whenever `hopKey` changes (a switch). While `crying` is
+ * set (its device was just unplugged), it sobs with tears running down.
  */
 export function Pal({
   flow = "output",
@@ -220,6 +221,7 @@ export function Pal({
   hopKey,
   muted,
   absent,
+  crying,
   className,
 }: {
   flow?: Flow;
@@ -227,6 +229,7 @@ export function Pal({
   hopKey?: string | null;
   muted?: boolean;
   absent?: boolean;
+  crying?: boolean;
   className?: string;
 }) {
   const [mood, setMood] = useState<Mood>("idle");
@@ -317,12 +320,31 @@ export function Pal({
     <div className={`relative inline-block ${className ?? ""}`} style={{ width: 16 * scale, height: 15 * scale }}>
       <motion.div animate={controls} style={{ originY: 1 }} className="absolute inset-0">
         <div ref={body} style={{ transformOrigin: "50% 100%", willChange: "transform" }}>
-          <Sprite map={FRAMES[hopping ? "surprised" : mood]} palette={PALETTES[flow]} scale={scale} />
+          <span className={crying ? "lb-sob relative block" : "relative block"}>
+            <Sprite map={FRAMES[crying ? "sad" : hopping ? "surprised" : mood]} palette={PALETTES[flow]} scale={scale} />
+            {crying && (
+              <>
+                <i className="tear tear-l" style={{ top: "50%", width: scale, height: 1.8 * scale }} />
+                <i className="tear tear-r" style={{ top: "50%", width: scale, height: 1.8 * scale }} />
+              </>
+            )}
+          </span>
         </div>
       </motion.div>
       <AnimatePresence>{mood === "sleep" && !reduce && <Zzz scale={scale} />}</AnimatePresence>
       <AnimatePresence>
-        {hopping && (
+        {crying ? (
+          <motion.span
+            key="cry"
+            initial={{ opacity: 0, y: 4, scale: 0.6, rotate: -6 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: -4 }}
+            exit={{ opacity: 0 }}
+            className="font-pixel absolute whitespace-nowrap rounded-[8px] bg-fg px-2 py-0.5 text-ink-900"
+            style={{ right: -6 * scale, top: -5 * scale, fontSize: 1.5 * scale }}
+          >
+            it's gone!
+          </motion.span>
+        ) : hopping && (
           <motion.span
             initial={{ opacity: 0, y: 4, scale: 0.6 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
