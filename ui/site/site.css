@@ -1452,3 +1452,33 @@ a:hover > .wordmark-m .wmm-letter,
     opacity: 1;
   }
 }
+
+/* ── Page scrollbar: a pink pill riding in a channel on the wall, instead of the default grey bar ── */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+::-webkit-scrollbar-track {
+  background: var(--wall);
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 3px solid var(--wall);
+  background: var(--color-lime);
+  box-shadow: inset -2px -2px 0 0 color-mix(in srgb, var(--ink-2) 70%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-lime-2);
+}
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-sun);
+}
+::-webkit-scrollbar-corner {
+  background: var(--wall);
+}
+/* Browsers without the ::-webkit-scrollbar pieces (Firefox) get the colours at least. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-color: var(--color-lime) var(--wall);
+  }
+}
