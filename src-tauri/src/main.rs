@@ -7,6 +7,7 @@ mod diag;
 mod engine;
 mod host;
 mod persistence;
+mod platform;
 
 fn main() {
     if std::env::args().any(|a| a == "--list") {

@@ -22,6 +22,7 @@ rand = "0.8"
 
 [target.'cfg(windows)'.dependencies]
 windows-core = "0.62"
+windows-numerics = "0.3"
 windows = { version = "0.62", features = [
   "Win32_Foundation",
   "Win32_Media_Audio",
@@ -44,6 +45,12 @@ windows = { version = "0.62", features = [
   "Win32_System_ProcessStatus",
   "Win32_Security_Authentication_Identity",
   "Win32_Graphics_Gdi",
+  "Win32_Graphics_Direct2D",
+  "Win32_Graphics_Direct2D_Common",
+  "Win32_Graphics_DirectWrite",
+  "Win32_Graphics_Dxgi_Common",
+  "Win32_UI_HiDpi",
+  "Win32_Storage_FileSystem",
   "Win32_System_Power",
   "Win32_System_Console",
 ] }
@@ -59,3 +66,6 @@ strip = true
 [features]
 # Set by the Tauri CLI for release builds: serve the bundled UI instead of the dev server.
 custom-protocol = ["tauri/custom-protocol"]
+
+[dev-dependencies]
+png = "0.17"

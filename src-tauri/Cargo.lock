@@ -4373,6 +4373,7 @@ name = "waypoint"
 version = "1.1.4"
 dependencies = [
  "chrono",
+ "png 0.17.16",
  "rand 0.8.8",
  "serde",
  "serde_json",
@@ -4383,6 +4384,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "windows",
  "windows-core",
+ "windows-numerics",
 ]
 
 [[package]]
