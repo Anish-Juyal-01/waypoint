@@ -541,6 +541,41 @@ button {
 .order-grip:active {
   cursor: grabbing;
 }
+/* On a phone every pixel of the row goes to the device name, so it isn't cut off. */
+@media (max-width: 640px) {
+  .paper-sheet {
+    padding: 14px 8px 8px;
+  }
+  .order-row {
+    gap: 6px;
+    padding: 10px 2px;
+  }
+  .order-grip {
+    width: 18px;
+  }
+  .order-row .set-num {
+    width: 1.5rem;
+    font-size: 22px;
+  }
+  .order-row .plug-btn {
+    min-width: 0;
+    padding: 0 8px;
+    gap: 3px;
+  }
+  /* Long names wrap onto a second line rather than being cut off. */
+  .order-row .truncate {
+    white-space: normal;
+    text-overflow: clip;
+    line-height: 1.15;
+  }
+}
+/* The smallest phones: the download button and the plug pills keep just their icons. */
+@media (max-width: 360px) {
+  .masthead .dl-short,
+  .order-row .plug-btn > span {
+    display: none;
+  }
+}
 .plug-btn {
   display: inline-flex;
   align-items: center;
@@ -770,9 +805,19 @@ body {
   box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
   animation: vinyl 7s linear infinite;
 }
-/* Leave room on the right of every sleeve for its record to slide out. */
+/* Leave room on the right of every sleeve for its record to slide out. The records roll past the screen edge, so
+   main clips sideways (clip, unlike hidden, keeps the gig's sticky stage working). Without it a phone widens the
+   whole layout to fit them, and the fixed header stretches off-screen with it. */
+main {
+  overflow-x: clip;
+}
 main > section {
   padding-right: clamp(64px, 14vw, 210px);
+}
+@media (max-width: 640px) {
+  main > section {
+    padding-right: 36px;
+  }
 }
 @keyframes vinyl {
   to {
@@ -808,7 +853,7 @@ main > section {
 }
 @media (max-width: 640px) {
   .venue-panel::before {
-    height: min(44%, 240px);
+    height: min(30%, 190px);
     translate: 30% -50%;
   }
 }

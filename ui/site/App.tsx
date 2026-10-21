@@ -68,10 +68,10 @@ export function App() {
             <CodeXml size={15} strokeWidth={2.5} />
             <span className="hidden sm:inline">GitHub</span>
           </a>
-          <a href={DOWNLOAD} className="btn-ink btn-sm">
+          <a href={DOWNLOAD} className="btn-ink btn-sm" aria-label="Download for Windows">
             <Download size={15} strokeWidth={2.5} />
             <span className="hidden sm:inline">Download for Windows</span>
-            <span className="sm:hidden">Download</span>
+            <span className="dl-short sm:hidden">Download</span>
           </a>
         </nav>
       </header>
