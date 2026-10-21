@@ -23,19 +23,15 @@ the best available one as the Windows default output, switching automatically wh
 
 ## Download and run
 
-Waypoint is a single portable `.exe` — no installer. Each release has two downloads; both contain the same app:
-
-| Download | Size | Use it if |
-|---|---|---|
-| `Waypoint-<version>-win-x64.zip` | about 60 MB | you're not sure — it has everything built in and runs on any PC |
-| `Waypoint-<version>-win-x64-lite.zip` | under 1 MB | you already have the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (if you don't, Windows offers to download it the first time you open Waypoint) |
+Waypoint is a single portable `.exe` (about 4 MB) with no installer. Each release has `Waypoint.exe` and the same
+file zipped as `Waypoint-<version>-win-x64.zip`.
 
 1. **Check your PC**: Windows 10 (version 1809 or newer) or Windows 11, 64-bit. Waypoint draws its window with
    Microsoft Edge WebView2, which is already on Windows 11 and on almost every up-to-date Windows 10 PC. If Waypoint
    says it's missing, install the free
    [Evergreen WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) and start it again.
-2. **Download** one of the zips above from the [latest release](https://github.com/Anish-Juyal-01/waypoint/releases/latest)
-   (under **Assets**), then right-click it → **Extract All**. Inside is `Waypoint.exe`.
+2. **Download** `Waypoint.exe` (or the zip, then right-click → **Extract All**) from the
+   [latest release](https://github.com/Anish-Juyal-01/waypoint/releases/latest) (under **Assets**).
 3. **Give it a permanent home** (optional, but do it if you'll use *Start with Windows*): make a folder such as
    `C:\Users\<you>\AppData\Local\Programs\Waypoint` or `C:\Tools\Waypoint` and move `Waypoint.exe` into it.
    *Start with Windows* remembers the exe's location, so it shouldn't stay in Downloads if you tidy that folder.
@@ -51,47 +47,28 @@ Waypoint is a single portable `.exe` — no installer. Each release has two down
    appear in Task Manager's *Startup apps* list). Closing the window keeps Waypoint in the tray (bottom
    right, near the clock); right-click the tray icon to switch output, profile or mode, or **Quit Waypoint**.
 
-**Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the one from the new zip, start it again. Your rankings,
+**Updating**: right-click the tray icon → **Quit Waypoint**, replace `Waypoint.exe` with the new one, start it again. Your rankings,
 profiles and history live in `%APPDATA%\Waypoint` and are kept.
 
 **Uninstalling**: turn off *Start with Windows* and *Show in Start menu*, quit from the tray, delete `Waypoint.exe`, and delete
-`%APPDATA%\Waypoint` and `%LOCALAPPDATA%\Waypoint` if you also want your settings gone.
+`%APPDATA%\Waypoint` and `%LOCALAPPDATA%\app.waypoint.desktop` if you also want your settings gone.
 
 ## Build from source
 
-You only need this to change the code. Requirements: Windows 10/11 x64, .NET SDK 10, Node.js 20+.
+You only need this to change the code. Requirements: Windows 10/11 x64, Node.js 20+, the Rust toolchain
+([rustup](https://rustup.rs), MSVC target) and the Visual Studio C++ Build Tools ("Desktop development with C++").
 
 ```powershell
-# Full pipeline: UI build + tests + publish → dist\Waypoint.exe, dist\lite\Waypoint.exe and the release zips in dist\release
+# Full pipeline: tests + UI build + release exe → dist\Waypoint.exe and dist\release\Waypoint-<version>-win-x64.zip
 ./scripts/build.ps1
 
-# Day-to-day development
-dotnet run --project src/Waypoint.App          # builds the UI automatically if ui/dist is missing
-
-# UI with hot reload inside the real app
-cd ui; npm install; npm run dev                 # terminal 1
-$env:WAYPOINT_DEV_URL = "http://localhost:5173"
-dotnet run --project src/Waypoint.App -p:SkipUiBuild=true   # terminal 2
+# Day-to-day development, from the repo root: starts the Vite dev server and the app with hot reload
+cd ui; npm install; cd ..
+ui\node_modules\.bin\tauri dev
 ```
 
 Opening `http://localhost:5173` in a normal browser shows the UI with **sample data** (clearly bannered as a preview);
 it is only for design work and is never used inside the app.
-
-### Tauri build (Rust)
-
-`src-tauri` is a port of the host to Rust and Tauri 2, using the same React UI and the same settings files. It needs
-the Rust toolchain (`rustup`, MSVC) and the Visual Studio C++ Build Tools instead of .NET.
-
-```powershell
-# Tests + UI build + release exe → dist-tauri\Waypoint.exe and dist-tauri\release\Waypoint-<version>-win-x64.zip
-./scripts/build-tauri.ps1
-
-# Day-to-day development, from the repo root (starts the Vite dev server and the app with hot reload)
-ui\node_modules\.bin\tauri dev
-```
-
-The exe is about 4 MB and uses the WebView2 runtime built into Windows. Closing the window to the tray destroys the
-webview, so the app idles at about 10 MB. The on-screen indicator is drawn natively (Direct2D), not in a webview.
 
 ### Website
 
@@ -111,24 +88,14 @@ asset named exactly `Waypoint.exe` alongside the zips.
 ### Tests
 
 ```powershell
-dotnet test                 # engine rules, persistence, classifier (xUnit)
-cd ui; npm test             # reorder logic (Vitest)
+cargo test --manifest-path src-tauri/Cargo.toml   # engine rules, persistence, classifier, startup task
+cd ui; npm test                                   # reorder logic (Vitest)
 ```
 
-### Diagnostics CLI
+### Diagnostics
 
-`waypoint-cli` (published to `dist\tools`) talks to the same audio layer and is handy for verifying behaviour
-independently of the UI:
-
-```powershell
-waypoint-cli list               # endpoints, state, transport, current default per role
-waypoint-cli switch 5 --comm    # set default (verified), including the Communications role
-waypoint-cli props 5            # dump an endpoint's property store
-waypoint-cli volume 5 40        # read or set volume (or: mute / unmute)
-waypoint-cli watch              # stream endpoint notifications
-```
-
-Add `--input` to any command to work with microphones.
+`Waypoint.exe --list` prints every endpoint with its state, transport, kind and volume, plus the current default for
+each role, straight from the audio layer and without opening the window. Run it from a terminal.
 
 ## Default shortcuts
 
@@ -171,15 +138,13 @@ and shows them on the Devices page:
 - **Pinned by Windows' per-app setting** (Settings → System → Sound → Volume mixer): click **Let it follow** to clear
   the pin (uses the same per-app routing API as EarTrumpet; the result is read back and re-checked).
 
-`waypoint-cli sessions` lists which app is on which device and whether Windows pins it.
-
 ## Data & privacy
 
 Everything stays on the PC:
 
 - `%APPDATA%\Waypoint\settings.json` — modes, priority lists, profiles, exclusions, names, switch volumes, shortcuts
 - `%APPDATA%\Waypoint\activity.jsonl` — activity log (last 2000 entries)
-- `%LOCALAPPDATA%\Waypoint\WebView2` — UI cache
+- `%LOCALAPPDATA%\app.waypoint.desktop` — UI cache (WebView2)
 - Start with Windows: a per-user Task Scheduler task named **Waypoint** that runs at sign-in (no admin rights).
   Windows' older "Run" registry list can skip newly added apps for days, so Waypoint doesn't use it.
 - Microphone: Windows only reports a mic's level while some app has it open, so while the **Microphones** page is on

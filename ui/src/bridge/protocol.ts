@@ -1,5 +1,5 @@
-// TypeScript side of the host ⇄ UI contract. Mirrors Waypoint.Core.Engine.RuntimeSnapshot and
-// Waypoint.App.Bridge.UiBridge (JSON is camelCase, enums are camelCase strings).
+// TypeScript side of the host ⇄ UI contract. Mirrors src-tauri/src/engine/types.rs (RuntimeSnapshot) and
+// src-tauri/src/host/bridge.rs (UiMessage); JSON is camelCase, enums are camelCase strings.
 
 export type SwitchMode = "off" | "balanced" | "strict";
 export type EndpointState = "active" | "disabled" | "notPresent" | "unplugged";

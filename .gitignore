@@ -1,11 +1,6 @@
-bin/
-obj/
 node_modules/
 dist/
 ui/dist/
-*.user
-.vs/
-artifacts/
 *.tsbuildinfo
 .claude/
 ui/dist-site/
@@ -13,4 +8,3 @@ ui/dist-site/
 # Rust build output
 src-tauri/target/
 src-tauri/gen/
-dist-tauri/

@@ -3,7 +3,7 @@
   Renders the Waypoint pixel-art app icon (multi-resolution .ico with PNG frames) using GDI+.
   The mark is a 16×16 pixel grid (lime tile, ink "source + echo arcs" glyph), drawn with
   nearest-neighbour fills so it stays crisp in the 16 px notification area.
-  Output: src/Waypoint.App/Assets/app.ico and ui/public/icon.png
+  Output: src-tauri/icons/icon.ico and ui/public/icon.png
 #>
 param(
     [string]$Root = (Split-Path -Parent $PSScriptRoot)
@@ -75,7 +75,7 @@ $frames = foreach ($sz in $sizes) {
 }
 
 # ICO container: ICONDIR + ICONDIRENTRY[] + PNG payloads.
-$out = Join-Path $Root 'src/Waypoint.App/Assets/app.ico'
+$out = Join-Path $Root 'src-tauri/icons/icon.ico'
 New-Item -ItemType Directory -Force (Split-Path $out) | Out-Null
 $fs = [System.IO.File]::Create($out)
 $w = New-Object System.IO.BinaryWriter $fs
