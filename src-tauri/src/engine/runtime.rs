@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
@@ -43,7 +43,8 @@ enum Msg {
 pub struct Runtime {
     tx: Sender<Msg>,
     metering: Arc<AtomicBool>,
-    thread: Option<JoinHandle<()>>,
+    mic_monitor: Arc<AtomicBool>,
+    thread: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl Runtime {
@@ -58,6 +59,8 @@ impl Runtime {
         let metering = Arc::new(AtomicBool::new(false));
         let notify_tx = tx.clone();
         let meter_flag = metering.clone();
+        let mic_monitor = Arc::new(AtomicBool::new(false));
+        let mic_flag = mic_monitor.clone();
 
         let thread = std::thread::Builder::new()
             .name("waypoint-runtime".into())
@@ -84,6 +87,7 @@ impl Runtime {
                 svc.initialize();
 
                 let mut was_metering = false;
+                let mut was_monitoring = false;
                 let mut next_meter = Instant::now();
                 let mut next_poll = Instant::now() + VOLUME_POLL;
 
@@ -98,8 +102,13 @@ impl Runtime {
                     let metering = meter_flag.load(Ordering::Relaxed);
                     if metering != was_metering {
                         was_metering = metering;
-                        svc.sync_capture_monitor(metering);
                         next_meter = Instant::now();
+                    }
+                    // Opening the mic lights Windows' privacy indicator, so only while the Microphones page is visible.
+                    let monitoring = metering && mic_flag.load(Ordering::Relaxed);
+                    if monitoring != was_monitoring {
+                        was_monitoring = monitoring;
+                        svc.sync_capture_monitor(monitoring);
                     }
 
                     let now = Instant::now();
@@ -111,7 +120,7 @@ impl Runtime {
                         Ok(Msg::Job(job)) => job(&mut svc),
                         Ok(Msg::Notification(n)) => {
                             svc.on_audio_notification(&n);
-                            if metering {
+                            if was_monitoring {
                                 svc.sync_capture_monitor(true); // the default mic may have changed
                             }
                         }
@@ -144,7 +153,7 @@ impl Runtime {
             })
             .expect("couldn't start the runtime thread");
 
-        Self { tx, metering, thread: Some(thread) }
+        Self { tx, metering, mic_monitor, thread: Mutex::new(Some(thread)) }
     }
 
     /// Runs `job` on the runtime thread.
@@ -167,9 +176,16 @@ impl Runtime {
         self.run(|_| {}); // wake the loop so it notices
     }
 
-    pub fn shutdown(&mut self) {
+    /// Keeps a silent stream open on the default mic (while metering) so the Microphones page can show its level.
+    pub fn set_mic_monitor(&self, on: bool) {
+        self.mic_monitor.store(on, Ordering::Relaxed);
+        self.run(|_| {});
+    }
+
+    /// Stops the thread after it saves settings. Safe to call more than once.
+    pub fn shutdown(&self) {
         let _ = self.tx.send(Msg::Shutdown);
-        if let Some(t) = self.thread.take() {
+        if let Some(t) = self.thread.lock().unwrap().take() {
             let _ = t.join();
         }
     }

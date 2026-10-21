@@ -6,7 +6,7 @@ const media = () => window.matchMedia("(prefers-color-scheme: light)");
 
 let current: ThemePref = "system";
 let listening = false;
-let userChangeAt = 0;
+let userChangeAt = -Infinity; // no user pick yet: host updates always apply
 
 export function resolveTheme(pref: ThemePref): ResolvedTheme {
   if (pref === "system") return media().matches ? "light" : "dark";
