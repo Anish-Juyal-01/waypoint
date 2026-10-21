@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The Waypoint UI talks to the host through one command and one event; nothing else is exposed.",
+  "windows": ["main", "osd"],
+  "permissions": ["core:event:allow-listen", "core:event:allow-unlisten"]
+}

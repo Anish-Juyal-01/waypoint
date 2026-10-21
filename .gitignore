@@ -9,3 +9,7 @@ artifacts/
 *.tsbuildinfo
 .claude/
 ui/dist-site/
+
+# Rust build output
+src-tauri/target/
+src-tauri/gen/
