@@ -77,6 +77,22 @@ dotnet run --project src/Waypoint.App -p:SkipUiBuild=true   # terminal 2
 Opening `http://localhost:5173` in a normal browser shows the UI with **sample data** (clearly bannered as a preview);
 it is only for design work and is never used inside the app.
 
+### Tauri build (Rust)
+
+`src-tauri` is a port of the host to Rust and Tauri 2, using the same React UI and the same settings files. It needs
+the Rust toolchain (`rustup`, MSVC) and the Visual Studio C++ Build Tools instead of .NET.
+
+```powershell
+# Tests + UI build + release exe → dist-tauri\Waypoint.exe and dist-tauri\release\Waypoint-<version>-win-x64.zip
+./scripts/build-tauri.ps1
+
+# Day-to-day development (starts the Vite dev server and the app with hot reload)
+cd ui; npx tauri dev
+```
+
+The exe is about 4 MB and uses the WebView2 runtime built into Windows. Closing the window to the tray destroys the
+webview, so the app idles at about 10 MB. The on-screen indicator is drawn natively (Direct2D), not in a webview.
+
 ### Website
 
 The landing page lives in `ui/site`. It reuses the app's pixel pals and riso styles, but nothing from it ships

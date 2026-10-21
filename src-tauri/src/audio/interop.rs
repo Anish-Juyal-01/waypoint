@@ -109,28 +109,29 @@ fn _assert_interfaces() {
     let _ = std::mem::size_of::<IUnknown_Vtbl>();
 }
 
-// The interface macro keeps methods private to this module, so the calls Waypoint makes are wrapped here.
+// The interface macro keeps methods private to this module, so the calls Waypoint makes are wrapped here. They're
+// unsafe for the same reason the COM methods are: the pointers must be valid (a live string, a writable out slot).
 
-pub fn set_default_endpoint_modern(p: &IPolicyConfig, id: PCWSTR, role: ERole) -> HRESULT {
+pub unsafe fn set_default_endpoint_modern(p: &IPolicyConfig, id: PCWSTR, role: ERole) -> HRESULT {
     unsafe { p.SetDefaultEndpoint(id, role) }
 }
 
-pub fn set_default_endpoint_vista(p: &IPolicyConfigVista, id: PCWSTR, role: ERole) -> HRESULT {
+pub unsafe fn set_default_endpoint_vista(p: &IPolicyConfigVista, id: PCWSTR, role: ERole) -> HRESULT {
     unsafe { p.SetDefaultEndpoint(id, role) }
 }
 
-pub fn get_app_endpoint_modern(f: &IAudioPolicyConfigFactory, pid: u32, flow: EDataFlow, role: ERole, out: *mut *mut c_void) -> HRESULT {
+pub unsafe fn get_app_endpoint_modern(f: &IAudioPolicyConfigFactory, pid: u32, flow: EDataFlow, role: ERole, out: *mut *mut c_void) -> HRESULT {
     unsafe { f.GetPersistedDefaultAudioEndpoint(pid, flow, role, out) }
 }
 
-pub fn get_app_endpoint_legacy(f: &IAudioPolicyConfigFactoryLegacy, pid: u32, flow: EDataFlow, role: ERole, out: *mut *mut c_void) -> HRESULT {
+pub unsafe fn get_app_endpoint_legacy(f: &IAudioPolicyConfigFactoryLegacy, pid: u32, flow: EDataFlow, role: ERole, out: *mut *mut c_void) -> HRESULT {
     unsafe { f.GetPersistedDefaultAudioEndpoint(pid, flow, role, out) }
 }
 
-pub fn set_app_endpoint_modern(f: &IAudioPolicyConfigFactory, pid: u32, flow: EDataFlow, role: ERole, device: *mut c_void) -> HRESULT {
+pub unsafe fn set_app_endpoint_modern(f: &IAudioPolicyConfigFactory, pid: u32, flow: EDataFlow, role: ERole, device: *mut c_void) -> HRESULT {
     unsafe { f.SetPersistedDefaultAudioEndpoint(pid, flow, role, device) }
 }
 
-pub fn set_app_endpoint_legacy(f: &IAudioPolicyConfigFactoryLegacy, pid: u32, flow: EDataFlow, role: ERole, device: *mut c_void) -> HRESULT {
+pub unsafe fn set_app_endpoint_legacy(f: &IAudioPolicyConfigFactoryLegacy, pid: u32, flow: EDataFlow, role: ERole, device: *mut c_void) -> HRESULT {
     unsafe { f.SetPersistedDefaultAudioEndpoint(pid, flow, role, device) }
 }

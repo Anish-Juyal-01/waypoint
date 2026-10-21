@@ -84,10 +84,7 @@ impl Controller {
         }
     }
 
-    pub fn flow(&self) -> AudioFlow {
-        self.flow
-    }
-
+    #[cfg(test)]
     pub fn override_(&self) -> Option<&ManualOverride> {
         self.override_.as_ref()
     }
@@ -100,6 +97,7 @@ impl Controller {
         &self.endpoints
     }
 
+    #[cfg(test)]
     pub fn enforcement_paused_until(&self) -> Option<Time> {
         self.paused_until
     }
