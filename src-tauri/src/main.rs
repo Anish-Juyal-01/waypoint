@@ -5,6 +5,7 @@
 mod audio;
 mod persistence;
 mod diag;
+mod engine;
 
 fn main() {
     if std::env::args().any(|a| a == "--list") {
