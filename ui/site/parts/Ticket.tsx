@@ -51,7 +51,7 @@ export function Ticket() {
             </div>
             <div>
               <dt>Size</dt>
-              <dd>about 150 MB</dd>
+              <dd>about 5 MB</dd>
             </div>
           </dl>
         </div>
