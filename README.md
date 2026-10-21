@@ -86,8 +86,8 @@ the Rust toolchain (`rustup`, MSVC) and the Visual Studio C++ Build Tools instea
 # Tests + UI build + release exe → dist-tauri\Waypoint.exe and dist-tauri\release\Waypoint-<version>-win-x64.zip
 ./scripts/build-tauri.ps1
 
-# Day-to-day development (starts the Vite dev server and the app with hot reload)
-cd ui; npx tauri dev
+# Day-to-day development, from the repo root (starts the Vite dev server and the app with hot reload)
+ui\node_modules\.bin\tauri dev
 ```
 
 The exe is about 4 MB and uses the WebView2 runtime built into Windows. Closing the window to the tray destroys the
