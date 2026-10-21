@@ -1,6 +1,6 @@
 [package]
 name = "waypoint"
-version = "1.1.4"
+version = "2.0.0"
 description = "Audio-priority manager for Windows"
 authors = ["Anish Juyal"]
 license = "MIT"

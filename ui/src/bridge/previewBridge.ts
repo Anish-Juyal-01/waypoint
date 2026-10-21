@@ -235,7 +235,7 @@ export function createPreviewBridge(): Bridge {
     switch (m.type) {
       case "ready":
         if (activity.length === 0) log("info", "Waypoint started in Balanced mode", "Preview data");
-        emit({ type: "hello", version: "1.1.4-preview", maximized: false, state: structuredClone(snapshot()), activity: [...activity] });
+        emit({ type: "hello", version: "2.0.0-preview", maximized: false, state: structuredClone(snapshot()), activity: [...activity] });
         startLevel();
         break;
       case "setMode":
